@@ -22,6 +22,7 @@ namespace RamMonitorPrototype
         }
     }
 
+
     public static class PerformanceInfo
     {
         [System.Runtime.InteropServices.DllImport("psapi.dll", SetLastError = true)]
@@ -47,6 +48,7 @@ namespace RamMonitorPrototype
             public int ThreadCount;
         }
 
+
         public static long GetPhysicalAvailableMemoryInMiB()
         {
             PerformanceInformation pi = new PerformanceInformation();
@@ -59,7 +61,8 @@ namespace RamMonitorPrototype
                 return -1;
             }
 
-        }
+        } // End Function GetPhysicalAvailableMemoryInMiB 
+
 
         public static long GetTotalMemoryInMiB()
         {
@@ -73,6 +76,10 @@ namespace RamMonitorPrototype
                 return -1;
             }
 
-        }
+        } // End Function GetTotalMemoryInMiB 
+
+
     }
+
+
 }

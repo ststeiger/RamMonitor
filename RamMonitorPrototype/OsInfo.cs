@@ -1,57 +1,6 @@
 ﻿
-// namespace RamMonitorPrototype
-
-
-namespace MicrophoneTest
+namespace RamMonitorPrototype
 {
-
-
-    public class MemoryMetrics
-    {
-        public ulong TotalPhys;
-        public ulong AvailPhys;
-        public ulong TotalPageFile;
-        public ulong AvailPageFile;
-        public ulong TotalVirtual;
-        public ulong AvailVirtual;
-        public ulong AvailExtendedVirtual;
-
-
-        public double Total;
-        public uint Used;
-        public double Free;
-
-
-        public HealthStatus_t HealthStatus
-        {
-            // https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.healthcheckapplicationbuilderextensions.usehealthchecks?view=aspnetcore-3.1
-            // https://gunnarpeipman.com/aspnet-core-memory-health-check/
-
-            get
-            {
-                if (this.Used > 89)
-                {
-                    return HealthStatus_t.Unhealthy;
-                }
-
-                if (this.Used > 79)
-                {
-                    return HealthStatus_t.Degraded;
-                }
-
-                return HealthStatus_t.Healthy;
-            }
-        }
-
-    }
-
-
-    public enum HealthStatus_t
-    {
-        Healthy,
-        Degraded,
-        Unhealthy
-    }
 
 
     public class OsInfo
@@ -70,6 +19,7 @@ namespace MicrophoneTest
         public static extern int GetOEMCP();
 
 
+
         public static System.Globalization.CultureInfo CurrentCultureInRegionalSettings()
         {
             // System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator;
@@ -78,6 +28,7 @@ namespace MicrophoneTest
 
             return new System.Globalization.CultureInfo(GetUserDefaultLCID());
         }
+
 
         [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal struct MEMORYSTATUSEX
@@ -116,13 +67,13 @@ namespace MicrophoneTest
 
 
         // https://stackoverflow.com/questions/1553336/how-can-i-get-the-total-physical-memory-in-c
-        private static MemoryMetrics GetWindowsMetrics()
+        private static SystemMemoryMetrics GetWindowsMetrics()
         {
             MEMORYSTATUSEX statEX = new MEMORYSTATUSEX();
             statEX.dwLength = (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(MEMORYSTATUSEX));
             GlobalMemoryStatusEx(ref statEX);
 
-            MemoryMetrics mm = new MemoryMetrics();
+            SystemMemoryMetrics mm = new SystemMemoryMetrics();
 
             mm.Used = statEX.dwMemoryLoad;
             mm.TotalPhys = statEX.ullTotalPhys;
@@ -137,9 +88,9 @@ namespace MicrophoneTest
         }
 
 
-        private static MemoryMetrics GetUnixMetrics()
+        private static SystemMemoryMetrics GetUnixMetrics()
         {
-            MemoryMetrics mm = new MemoryMetrics();
+            SystemMemoryMetrics mm = new SystemMemoryMetrics();
 
             // At this point, we already checked if /proc/meminfo exists 
             // https://github.com/ststeiger/ReadMemInfo/blob/master/ReadMemInfo/Proc.cs
@@ -153,9 +104,9 @@ namespace MicrophoneTest
         }
 
 
-        public static MemoryMetrics GetMetrics()
+        public static SystemMemoryMetrics GetMetrics()
         {
-            MemoryMetrics metrics = null;
+            SystemMemoryMetrics metrics = null;
 
             // X-Box supports GlobalMemoryStatusEx 
             // https://github.com/microsoft/Xbox-ATG-Samples/blob/master/UWPSamples/System/SystemInfoUWP/SystemInfo.cpp
@@ -220,6 +171,7 @@ namespace MicrophoneTest
         private const int PROCESSOR_ARCHITECTURE_IA64 = 6;
         private const int PROCESSOR_ARCHITECTURE_INTEL = 0;
 
+
         [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
         private struct SYSTEM_INFO
         {
@@ -235,6 +187,7 @@ namespace MicrophoneTest
             public short wProcessorLevel;
             public short wProcessorRevision;
         }
+
 
         public static System.Reflection.ProcessorArchitecture GetProcessorArchitecture()
         {
@@ -256,6 +209,7 @@ namespace MicrophoneTest
             }
         }
 
+
         public static void GetProcessorArchitectureSimple()
         {
             switch (typeof(string).Assembly.GetName().ProcessorArchitecture)
@@ -270,6 +224,191 @@ namespace MicrophoneTest
                     break;
             }
         }
+
+        public static System.Runtime.InteropServices.OSPlatform GetOperatingSystem()
+        {
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+            {
+                return System.Runtime.InteropServices.OSPlatform.OSX;
+            }
+
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+            {
+                return System.Runtime.InteropServices.OSPlatform.Linux;
+            }
+
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+            {
+                return System.Runtime.InteropServices.OSPlatform.Windows;
+            }
+
+            throw new System.Exception("Cannot determine operating system!");
+        }
+
+
+
+        // https://stackoverflow.com/a/55202696/155077
+        //[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        //unsafe internal struct Utsname_internal
+        //{
+        //    public fixed byte sysname[65];
+        //    public fixed byte nodename[65];
+        //    public fixed byte release[65];
+        //    public fixed byte version[65];
+        //    public fixed byte machine[65];
+        //    public fixed byte domainname[65];
+        //}
+
+
+        public class Utsname
+        {
+            public string SysName; // char[65]
+            public string NodeName; // char[65]
+            public string Release; // char[65]
+            public string Version; // char[65]
+            public string Machine; // char[65]
+            public string DomainName; // char[65]
+
+            public void Print()
+            {
+                System.Console.Write("SysName:\t");
+                System.Console.WriteLine(this.SysName);
+
+                System.Console.Write("NodeName:\t");
+                System.Console.WriteLine(this.NodeName);
+
+                System.Console.Write("Release:\t");
+                System.Console.WriteLine(this.Release);
+
+                System.Console.Write("Version:\t");
+                System.Console.WriteLine(this.Version);
+
+                System.Console.Write("Machine:\t");
+                System.Console.WriteLine(this.Machine);
+
+                System.Console.Write("DomainName:\t");
+                System.Console.WriteLine(this.DomainName);
+
+
+                Mono.Unix.Native.Utsname buf;
+                Mono.Unix.Native.Syscall.uname(out buf);
+
+                System.Console.WriteLine(buf.sysname);
+                System.Console.WriteLine(buf.nodename);
+                System.Console.WriteLine(buf.release);
+                System.Console.WriteLine(buf.version);
+                System.Console.WriteLine(buf.machine);
+                System.Console.WriteLine(buf.domainname);
+            }
+
+
+        }
+
+        
+        [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "uname", CallingConvention = System.Runtime.InteropServices.CallingConvention.Cdecl)]
+        private static extern int uname_syscall(System.IntPtr buf);
+
+        // https://github.com/jpobst/Pinta/blob/master/Pinta.Core/Managers/SystemManager.cs
+        private static Utsname Uname()
+        {
+            Utsname uts = null;
+            System.IntPtr buf = System.IntPtr.Zero;
+
+            buf = System.Runtime.InteropServices.Marshal.AllocHGlobal(8192);
+            // This is a hacktastic way of getting sysname from uname ()
+            if (uname_syscall(buf) == 0)
+            {
+                uts = new Utsname();
+                uts.SysName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buf);
+
+                long bufVal = buf.ToInt64();
+                uts.NodeName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 1 * 65));
+                uts.Release = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 2 * 65));
+                uts.Version = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 3 * 65));
+                uts.Machine = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 4 * 65));
+                uts.DomainName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 5 * 65));
+
+                if (buf != System.IntPtr.Zero)
+                    System.Runtime.InteropServices.Marshal.FreeHGlobal(buf);
+            } // End if (uname_syscall(buf) == 0) 
+
+            return uts;
+        } // End Function Uname
+
+
+
+        private static string s_osFullName;
+
+
+        public static string OSFullName
+        {
+            get
+            {
+                if (s_osFullName != null)
+                    return s_osFullName;
+
+                if (System.Environment.OSVersion.Platform == System.PlatformID.Unix)
+                {
+                    s_osFullName = System.Environment.OSVersion.Platform.ToString();
+
+
+                    System.Console.WriteLine(System.Environment.OSVersion.Platform.ToString());
+                    System.Console.WriteLine(System.Environment.OSVersion.VersionString);
+                    System.Console.WriteLine(System.Environment.OSVersion.Version.Major);
+
+                    return s_osFullName;
+                }
+
+
+                try
+                {
+                    System.Management.SelectQuery query = new System.Management.SelectQuery("Win32_OperatingSystem");
+
+                    using (System.Management.ManagementObjectSearcher mos = new System.Management.ManagementObjectSearcher(query))
+                    {
+                        using (System.Management.ManagementObjectCollection managementObjectCollection = mos.Get())
+                        {
+
+                            if (managementObjectCollection.Count <= 0)
+                            {
+                                throw new System.InvalidOperationException(@"Could not obtain full operation system name due to internal error. 
+This might be caused by WMI not existing on the current machine.");
+                            }
+
+                            using (System.Management.ManagementObjectCollection.ManagementObjectEnumerator enumerator = 
+                                managementObjectCollection.GetEnumerator())
+                            {
+                                enumerator.MoveNext();
+
+                                if (s_osFullName == null)
+                                { 
+                                    s_osFullName = System.Convert.ToString(enumerator.Current.Properties["Name"].Value);
+
+                                    if (s_osFullName.Contains(System.Convert.ToString('|')))
+                                    {
+                                        s_osFullName = s_osFullName.Substring(0, s_osFullName.IndexOf('|'));
+                                        return s_osFullName;
+                                    } // End if (s_osFullName.Contains(System.Convert.ToString('|'))) 
+
+                                } // End if (s_osFullName == null) 
+
+                                return s_osFullName;
+                            } // End Using enumerator 
+
+                        } // End Using managementObjectCollection 
+
+                    } // End Using mos 
+
+                }
+                catch (System.Runtime.InteropServices.COMException)
+                {
+                    s_osFullName = System.Environment.OSVersion.Platform.ToString();
+                    return s_osFullName;
+                }
+            }
+        }
+
+
 
         public static void ListInfos()
         {
@@ -337,4 +476,6 @@ namespace MicrophoneTest
 
 
     }
+
+
 }
