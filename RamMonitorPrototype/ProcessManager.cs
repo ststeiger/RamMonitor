@@ -7,12 +7,6 @@ namespace RamMonitorPrototype
     {
 
 
-        public static void foo()
-        {
-
-        }
-
-
         public static ProcessMemoryMetrics GetProcessGroupMemory(string processName)
         {
             ProcessMemoryMetrics mem = new ProcessMemoryMetrics();
