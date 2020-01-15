@@ -30,100 +30,12 @@ namespace RamMonitorPrototype
         }
 
 
-        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        internal struct MEMORYSTATUSEX
+        public static GlobalMemoryMetrics MemoryMetrics
         {
-            // The size of the structure, in bytes. 
-            // You must set this member before calling
-            internal uint dwLength;
-
-            // https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-memorystatusex
-            // A number between 0 and 100 that specifies the approximate percentage of physical memory that is in use 
-            // (0 indicates no memory use and 100 indicates full memory use).
-            internal uint dwMemoryLoad;
-
-            internal ulong ullTotalPhys;
-            internal ulong ullAvailPhys;
-            internal ulong ullTotalPageFile;
-            internal ulong ullAvailPageFile;
-            internal ulong ullTotalVirtual;
-            internal ulong ullAvailVirtual;
-            internal ulong ullAvailExtendedVirtual;
-
-        }
-
-
-        // [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
-        // [System.Runtime.InteropServices.DllImport("Kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, SetLastError = true)]
-        // internal static extern bool GlobalMemoryStatusEx([System.Runtime.InteropServices.In, System.Runtime.InteropServices.Out] MEMORYSTATUSEX lpBuffer);
-
-        // Alternate Version Using "ref," And Works With Alternate Code Below.
-        // Also See Alternate Version Of [MEMORYSTATUSEX] Structure With
-        // Fields Documented.
-        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
-        [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, EntryPoint = "GlobalMemoryStatusEx", SetLastError = true)]
-        static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
-
-
-
-        // https://stackoverflow.com/questions/1553336/how-can-i-get-the-total-physical-memory-in-c
-        private static SystemMemoryMetrics GetWindowsMetrics()
-        {
-            MEMORYSTATUSEX statEX = new MEMORYSTATUSEX();
-            statEX.dwLength = (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(MEMORYSTATUSEX));
-            GlobalMemoryStatusEx(ref statEX);
-
-            SystemMemoryMetrics mm = new SystemMemoryMetrics();
-
-            mm.Used = statEX.dwMemoryLoad;
-            mm.TotalPhys = statEX.ullTotalPhys;
-            mm.AvailPhys = statEX.ullAvailPhys;
-            mm.TotalPageFile = statEX.ullTotalPageFile;
-            mm.AvailPageFile = statEX.ullAvailPageFile;
-            mm.TotalVirtual = statEX.ullTotalVirtual;
-            mm.AvailVirtual = statEX.ullAvailVirtual;
-            mm.AvailExtendedVirtual = statEX.ullAvailExtendedVirtual;
-
-            return mm;
-        }
-
-
-        private static SystemMemoryMetrics GetUnixMetrics()
-        {
-            SystemMemoryMetrics mm = new SystemMemoryMetrics();
-
-            // At this point, we already checked if /proc/meminfo exists 
-            // https://github.com/ststeiger/ReadMemInfo/blob/master/ReadMemInfo/Proc.cs
-
-            using (System.Data.DataTable dt = Linux.ProcFS.GetMemInfo())
+            get
             {
-                System.Console.WriteLine(dt);
+                return GlobalMemoryMetrics.Instance;
             }
-
-            return mm;
-        }
-
-
-        public static SystemMemoryMetrics GetMetrics()
-        {
-            SystemMemoryMetrics metrics = null;
-
-            // X-Box supports GlobalMemoryStatusEx 
-            // https://github.com/microsoft/Xbox-ATG-Samples/blob/master/UWPSamples/System/SystemInfoUWP/SystemInfo.cpp
-            if (System.Environment.OSVersion.Platform != System.PlatformID.Unix)
-            {
-                metrics = GetWindowsMetrics();
-            }
-            else if (System.IO.File.Exists("/proc/meminfo"))
-            {
-                metrics = GetUnixMetrics();
-            }
-            else
-            {
-                throw new System.NotSupportedException("GetMetrics not supported for current operating system.");
-            }
-
-            return metrics;
         }
 
 
