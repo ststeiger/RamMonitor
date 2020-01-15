@@ -7,6 +7,13 @@ namespace RamMonitorPrototype
     {
 
 
+        // https://cheesehead-techblog.blogspot.com/2009/02/five-ways-to-make-notification-pop-up.html
+        // https://wiki.debianforum.de/Desktop-Notification_von_Systemservice_mittels_dbus
+        // https://gist.github.com/ducin/6152106
+        // https://cweiske.de/tagebuch/DBus%20notify-send%20over%20network.htm
+        // dotnet dbus list services --bus system | grep NetworkManager org.freedesktop.NetworkManager
+        // dotnet dbus list objects --bus system --service org.freedesktop.NetworkManager
+        // dotnet dbus codegen --bus system --service org.freedesktop.NetworkManager
         static void Main(string[] args)
         {
             Utsname uts = new Utsname();
