@@ -246,86 +246,6 @@ namespace RamMonitorPrototype
         }
 
 
-
-        // https://stackoverflow.com/a/55202696/155077
-        //[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        //unsafe internal struct Utsname_internal
-        //{
-        //    public fixed byte sysname[65];
-        //    public fixed byte nodename[65];
-        //    public fixed byte release[65];
-        //    public fixed byte version[65];
-        //    public fixed byte machine[65];
-        //    public fixed byte domainname[65];
-        //}
-
-
-        public class Utsname
-        {
-            public string SysName; // char[65]
-            public string NodeName; // char[65]
-            public string Release; // char[65]
-            public string Version; // char[65]
-            public string Machine; // char[65]
-            public string DomainName; // char[65]
-
-            public void Print()
-            {
-                System.Console.Write("SysName:\t");
-                System.Console.WriteLine(this.SysName); // Linux 
-
-                System.Console.Write("NodeName:\t");
-                System.Console.WriteLine(this.NodeName); // System.Environment.MachineName
-
-                System.Console.Write("Release:\t");
-                System.Console.WriteLine(this.Release); // Kernel-version
-
-                System.Console.Write("Version:\t");
-                System.Console.WriteLine(this.Version); // #40~18.04.1-Ubuntu SMP Thu Nov 14 12:06:39 UTC 2019
-
-                System.Console.Write("Machine:\t");
-                System.Console.WriteLine(this.Machine); // x86_64
-
-                System.Console.Write("DomainName:\t");
-                System.Console.WriteLine(this.DomainName); // (none)
-            }
-
-
-        }
-
-        
-        [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "uname", CallingConvention = System.Runtime.InteropServices.CallingConvention.Cdecl)]
-        private static extern int uname_syscall(System.IntPtr buf);
-
-        // https://github.com/jpobst/Pinta/blob/master/Pinta.Core/Managers/SystemManager.cs
-        private static Utsname Uname()
-        {
-            Utsname uts = null;
-            System.IntPtr buf = System.IntPtr.Zero;
-
-            buf = System.Runtime.InteropServices.Marshal.AllocHGlobal(8192);
-            // This is a hacktastic way of getting sysname from uname ()
-            if (uname_syscall(buf) == 0)
-            {
-                uts = new Utsname();
-                uts.SysName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buf);
-
-                long bufVal = buf.ToInt64();
-                uts.NodeName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 1 * 65));
-                uts.Release = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 2 * 65));
-                uts.Version = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 3 * 65));
-                uts.Machine = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 4 * 65));
-                uts.DomainName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 5 * 65));
-
-                if (buf != System.IntPtr.Zero)
-                    System.Runtime.InteropServices.Marshal.FreeHGlobal(buf);
-            } // End if (uname_syscall(buf) == 0) 
-
-            return uts;
-        } // End Function Uname
-
-
-
         private static string s_osFullName;
 
 
@@ -338,26 +258,12 @@ namespace RamMonitorPrototype
 
                 try
                 {
-                    
-                    if (System.Environment.OSVersion.Platform == System.PlatformID.Unix)
-                    {
-                        s_osFullName = System.Environment.OSVersion.Platform.ToString();
-                        
-                        s_osFullName = System.Runtime.InteropServices.RuntimeInformation.OSDescription + " (" + System.Runtime.InteropServices.RuntimeInformation.OSArchitecture + ")";
-                        
-                        
-                        // Utsname uts = Uname();
-                        // s_osFullName = uts.SysName + " (" + uts.Release + ") " + uts.Version;
-                        
-                        // System.Console.WriteLine(System.Environment.OSVersion.Platform.ToString());
-                        // System.Console.WriteLine(System.Environment.OSVersion.Version); // Kernel-Version
-                        // System.Console.WriteLine(System.Environment.OSVersion.VersionString);
-                        // System.Console.WriteLine(System.Environment.OSVersion.Version.Major);
-                        
+
+                    s_osFullName = System.Runtime.InteropServices.RuntimeInformation.OSDescription + " (" + System.Runtime.InteropServices.RuntimeInformation.OSArchitecture + ")";
+
+                    if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
                         return s_osFullName;
-                    }
-                    
-                    
+
                     System.Management.SelectQuery query = new System.Management.SelectQuery("Win32_OperatingSystem");
 
                     using (System.Management.ManagementObjectSearcher mos = new System.Management.ManagementObjectSearcher(query))
@@ -371,22 +277,29 @@ namespace RamMonitorPrototype
 This might be caused by WMI not existing on the current machine.");
                             }
 
-                            using (System.Management.ManagementObjectCollection.ManagementObjectEnumerator enumerator = 
+                            using (System.Management.ManagementObjectCollection.ManagementObjectEnumerator enumerator =
                                 managementObjectCollection.GetEnumerator())
                             {
                                 enumerator.MoveNext();
 
-                                if (s_osFullName == null)
-                                { 
-                                    s_osFullName = System.Convert.ToString(enumerator.Current.Properties["Name"].Value);
+                                s_osFullName = System.Convert.ToString(enumerator.Current.Properties["Name"].Value);
 
-                                    if (s_osFullName.Contains(System.Convert.ToString('|')))
-                                    {
-                                        s_osFullName = s_osFullName.Substring(0, s_osFullName.IndexOf('|'));
-                                        return s_osFullName;
-                                    } // End if (s_osFullName.Contains(System.Convert.ToString('|'))) 
+                                if (s_osFullName.Contains(System.Convert.ToString('|')))
+                                {
+                                    s_osFullName = s_osFullName.Substring(0, s_osFullName.IndexOf('|'));
+                                    
+                                } // End if (s_osFullName.Contains(System.Convert.ToString('|'))) 
 
-                                } // End if (s_osFullName == null) 
+                                s_osFullName += " ["+System.Runtime.InteropServices.RuntimeInformation.OSArchitecture+"] ";
+
+                                s_osFullName += " (" + System.Environment.OSVersion.Platform.ToString() + " "
+                                        + System.Environment.OSVersion.Version.ToString();
+
+                                if (!string.IsNullOrEmpty(System.Environment.OSVersion.ServicePack))
+                                {
+                                    s_osFullName += " SP" + System.Environment.OSVersion.ServicePack;
+                                }
+                                s_osFullName += ")";
 
                                 return s_osFullName;
                             } // End Using enumerator 
@@ -396,9 +309,10 @@ This might be caused by WMI not existing on the current machine.");
                     } // End Using mos 
 
                 }
-                catch (System.Runtime.InteropServices.COMException)
+                catch (System.Exception)
                 {
-                    s_osFullName = System.Environment.OSVersion.Platform.ToString();
+                    s_osFullName = System.Runtime.InteropServices.RuntimeInformation.OSDescription + " (" + System.Runtime.InteropServices.RuntimeInformation.OSArchitecture + ")";
+
                     return s_osFullName;
                 }
             }

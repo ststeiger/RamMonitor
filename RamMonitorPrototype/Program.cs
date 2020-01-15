@@ -9,7 +9,17 @@ namespace RamMonitorPrototype
 
         static void Main(string[] args)
         {
+            Utsname uts = new Utsname();
+            uts.Write(System.Console.Out);
+
             System.Console.WriteLine(OsInfo.OSFullName);
+            System.Console.WriteLine(DetermineOsBitness.GetProcessorArchitecture());
+            System.Console.WriteLine(DetermineOsBitness.Is64BitOperatingSystem());
+            
+            System.Console.Write(@"OS Description: ");
+            System.Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.OSDescription);
+            System.Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
+            System.Console.WriteLine(System.Runtime.InteropServices.RuntimeEnvironment.GetSystemVersion());
 
             // ProcessManager.KillProcessGroup("chrome");
             ProcessMemoryMetrics mem = ProcessManager.GetProcessGroupMemory("chrome");
@@ -22,15 +32,7 @@ namespace RamMonitorPrototype
             
             SystemMemoryMetrics metrics = OsInfo.GetMetrics();
             System.Console.WriteLine(metrics.Free);
-
-
-            System.Console.WriteLine(@"foobar");
-            System.Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.OSDescription);
-            System.Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
-            System.Console.WriteLine(System.Runtime.InteropServices.RuntimeEnvironment.GetSystemVersion());
-
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
-                System.Console.WriteLine("Linux.");
+            
 
             System.Console.WriteLine(System.Environment.NewLine);
             System.Console.WriteLine(" --- Press any key to continue --- ");
