@@ -24,8 +24,7 @@ namespace RamMonitorPrototype
             System.Console.WriteLine(metrics.Free);
 
 
-            
-
+            System.Console.WriteLine(@"foobar");
             System.Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.OSDescription);
             System.Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
             System.Console.WriteLine(System.Runtime.InteropServices.RuntimeEnvironment.GetSystemVersion());

@@ -272,33 +272,22 @@ namespace RamMonitorPrototype
             public void Print()
             {
                 System.Console.Write("SysName:\t");
-                System.Console.WriteLine(this.SysName);
+                System.Console.WriteLine(this.SysName); // Linux 
 
                 System.Console.Write("NodeName:\t");
-                System.Console.WriteLine(this.NodeName);
+                System.Console.WriteLine(this.NodeName); // System.Environment.MachineName
 
                 System.Console.Write("Release:\t");
-                System.Console.WriteLine(this.Release);
+                System.Console.WriteLine(this.Release); // Kernel-version
 
                 System.Console.Write("Version:\t");
-                System.Console.WriteLine(this.Version);
+                System.Console.WriteLine(this.Version); // #40~18.04.1-Ubuntu SMP Thu Nov 14 12:06:39 UTC 2019
 
                 System.Console.Write("Machine:\t");
-                System.Console.WriteLine(this.Machine);
+                System.Console.WriteLine(this.Machine); // x86_64
 
                 System.Console.Write("DomainName:\t");
-                System.Console.WriteLine(this.DomainName);
-
-
-                Mono.Unix.Native.Utsname buf;
-                Mono.Unix.Native.Syscall.uname(out buf);
-
-                System.Console.WriteLine(buf.sysname);
-                System.Console.WriteLine(buf.nodename);
-                System.Console.WriteLine(buf.release);
-                System.Console.WriteLine(buf.version);
-                System.Console.WriteLine(buf.machine);
-                System.Console.WriteLine(buf.domainname);
+                System.Console.WriteLine(this.DomainName); // (none)
             }
 
 
@@ -347,21 +336,28 @@ namespace RamMonitorPrototype
                 if (s_osFullName != null)
                     return s_osFullName;
 
-                if (System.Environment.OSVersion.Platform == System.PlatformID.Unix)
-                {
-                    s_osFullName = System.Environment.OSVersion.Platform.ToString();
-
-
-                    System.Console.WriteLine(System.Environment.OSVersion.Platform.ToString());
-                    System.Console.WriteLine(System.Environment.OSVersion.VersionString);
-                    System.Console.WriteLine(System.Environment.OSVersion.Version.Major);
-
-                    return s_osFullName;
-                }
-
-
                 try
                 {
+                    
+                    if (System.Environment.OSVersion.Platform == System.PlatformID.Unix)
+                    {
+                        s_osFullName = System.Environment.OSVersion.Platform.ToString();
+                        
+                        s_osFullName = System.Runtime.InteropServices.RuntimeInformation.OSDescription + " (" + System.Runtime.InteropServices.RuntimeInformation.OSArchitecture + ")";
+                        
+                        
+                        // Utsname uts = Uname();
+                        // s_osFullName = uts.SysName + " (" + uts.Release + ") " + uts.Version;
+                        
+                        // System.Console.WriteLine(System.Environment.OSVersion.Platform.ToString());
+                        // System.Console.WriteLine(System.Environment.OSVersion.Version); // Kernel-Version
+                        // System.Console.WriteLine(System.Environment.OSVersion.VersionString);
+                        // System.Console.WriteLine(System.Environment.OSVersion.Version.Major);
+                        
+                        return s_osFullName;
+                    }
+                    
+                    
                     System.Management.SelectQuery query = new System.Management.SelectQuery("Win32_OperatingSystem");
 
                     using (System.Management.ManagementObjectSearcher mos = new System.Management.ManagementObjectSearcher(query))
