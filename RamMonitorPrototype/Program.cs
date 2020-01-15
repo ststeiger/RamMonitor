@@ -14,6 +14,12 @@ namespace RamMonitorPrototype
         // dotnet dbus list services --bus system | grep NetworkManager org.freedesktop.NetworkManager
         // dotnet dbus list objects --bus system --service org.freedesktop.NetworkManager
         // dotnet dbus codegen --bus system --service org.freedesktop.NetworkManager
+        
+        // cd ~/gitlab/Projects/NiHaoRS/Tmds.DBus.Tool
+        // dotnet run codegen --bus system --service org.freedesktop.NetworkManager
+        // dotnet run codegen --bus session --service org.freedesktop.Notifications
+        
+
         static void Main(string[] args)
         {
             Utsname uts = new Utsname();
