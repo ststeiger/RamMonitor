@@ -9,15 +9,11 @@ namespace RamMonitorPrototype
 
         static void Main(string[] args)
         {
-            System.Data.DataTable dt = Linux.ProcFS.GetMemInfo();
-            System.Console.WriteLine(dt.Rows.Count);
-
             Utsname uts = new Utsname();
             uts.Write(System.Console.Out);
 
             System.Console.WriteLine(OsInfo.OSFullName);
-            System.Console.WriteLine(DetermineOsBitness.GetProcessorArchitecture());
-            System.Console.WriteLine(DetermineOsBitness.Is64BitOperatingSystem());
+            
             
             System.Console.Write(@"OS Description: ");
             System.Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.OSDescription);
@@ -37,10 +33,12 @@ namespace RamMonitorPrototype
             System.Console.WriteLine(metrics.Load);
             System.Console.WriteLine(metrics.SwapLoad);
 
+
             GlobalMemoryMetrics procMem = new LinuxMemoryMetrics();
             System.Console.WriteLine(procMem);
             procMem.WriteMemory(System.Console.Out);
             
+
             GlobalMemoryMetrics winMem = new WindowsMemoryMetrics();
             System.Console.WriteLine(winMem);
             winMem.WriteMemory(System.Console.Out);

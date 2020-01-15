@@ -6,6 +6,16 @@ namespace Linux
     class ProcFS
     {
 
+        public static void Test()
+        {
+
+            using (System.Data.DataTable dt = Linux.ProcFS.GetMemInfo())
+            {
+                System.Console.WriteLine(dt.Rows.Count);
+            }
+            
+        }
+
 
         public static System.Data.DataTable GetMemInfo()
         {

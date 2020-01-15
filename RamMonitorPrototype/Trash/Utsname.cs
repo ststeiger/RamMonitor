@@ -63,10 +63,7 @@ namespace RamMonitorPrototype
         {
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
             {
-                if (DetermineOsBitness.Is64BitOperatingSystem())
-                    uts.SysName = "Windows (64-Bit)";
-                else
-                    uts.SysName = "Windows (32-Bit)";
+                uts.SysName = "Windows (" + System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString() + ")";
 
                 uts.NodeName = System.Environment.MachineName;
                 uts.Release = System.Environment.OSVersion.Version.ToString();
@@ -78,25 +75,38 @@ namespace RamMonitorPrototype
             } // End if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)) 
 
 
-            System.IntPtr buf = System.IntPtr.Zero;
-
-            buf = System.Runtime.InteropServices.Marshal.AllocHGlobal(8192);
-            // This is a hacktastic way of getting sysname from uname ()
-            if (uname_syscall(buf) == 0)
+            try
             {
-                uts = new Utsname();
+                System.IntPtr buf = System.IntPtr.Zero;
 
-                long bufVal = buf.ToInt64();
-                uts.SysName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buf);
-                uts.NodeName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 1 * 65));
-                uts.Release = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 2 * 65));
-                uts.Version = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 3 * 65));
-                uts.Machine = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 4 * 65));
-                uts.DomainName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 5 * 65));
+                buf = System.Runtime.InteropServices.Marshal.AllocHGlobal(8192);
+                // This is a hacktastic way of getting sysname from uname ()
+                if (uname_syscall(buf) == 0)
+                {
+                    uts = new Utsname();
 
-                if (buf != System.IntPtr.Zero)
-                    System.Runtime.InteropServices.Marshal.FreeHGlobal(buf);
-            } // End if (uname_syscall(buf) == 0) 
+                    long bufVal = buf.ToInt64();
+                    uts.SysName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buf);
+                    uts.NodeName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 1 * 65));
+                    uts.Release = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 2 * 65));
+                    uts.Version = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 3 * 65));
+                    uts.Machine = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 4 * 65));
+                    uts.DomainName = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(new System.IntPtr(bufVal + 5 * 65));
+
+                    if (buf != System.IntPtr.Zero)
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(buf);
+                } // End if (uname_syscall(buf) == 0) 
+                return;
+            }
+            catch (System.Exception)
+            { }
+
+            uts.SysName = System.Environment.OSVersion.Platform.ToString();
+            uts.NodeName = System.Environment.MachineName;
+            uts.Release = System.Environment.OSVersion.Version.ToString();
+            uts.Version = System.Runtime.InteropServices.RuntimeInformation.OSDescription;
+            uts.Machine = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString();
+            uts.DomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
 
         } // End Function Uname
 

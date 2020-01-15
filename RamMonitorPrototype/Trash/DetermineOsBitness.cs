@@ -29,7 +29,7 @@ namespace RamMonitorPrototype
 
 
         [System.Security.SecurityCritical]
-        private static bool DoesWin32MethodExist(string moduleName, string methodName)
+        private static bool ModuleAndFunctionExists(string moduleName, string methodName)
         {
             System.IntPtr hModule = GetModuleHandle(moduleName);
 
@@ -49,7 +49,7 @@ namespace RamMonitorPrototype
             if (System.IntPtr.Size * 8 == 64)
                 return true;
 
-            if (!DoesWin32MethodExist(Kernel32, "IsWow64Process"))
+            if (!ModuleAndFunctionExists(Kernel32, "IsWow64Process"))
                 return false;
 
             bool isWow64;
@@ -99,6 +99,12 @@ namespace RamMonitorPrototype
             return strProcessorArchitecture;
         } // End Function GetProcessorArchitecture
 
+
+        public static void Test()
+        {
+            System.Console.WriteLine(DetermineOsBitness.GetProcessorArchitecture());
+            System.Console.WriteLine(DetermineOsBitness.Is64BitOperatingSystem());
+        }
 
     } // End Class DetermineOsBitness 
 

@@ -3,7 +3,7 @@ namespace RamMonitorPrototype
 {
 
 
-    class ProcessManager
+    public class ProcessManager
     {
 
 
@@ -50,10 +50,10 @@ namespace RamMonitorPrototype
 
                 mem.NonpagedSystemMemorySize += pro.NonpagedSystemMemorySize;
                 mem.NonpagedSystemMemorySize64 += pro.NonpagedSystemMemorySize64;
-            }
+            } // Next pro 
 
             return mem;
-        }
+        } // End Function GetProcessGroupMemory 
 
 
         public static void KillProcessGroup(string processName)
@@ -73,7 +73,7 @@ namespace RamMonitorPrototype
                     pro.Close();
                 }
                 catch (System.Exception) { }
-            }
+            } // Next pro 
 
 
             System.Diagnostics.Process[] procs = System.Diagnostics.Process.GetProcessesByName(processName);
@@ -86,9 +86,11 @@ namespace RamMonitorPrototype
                 }
                 catch (System.Exception) { }
 
-            }
-        }
+            } // Next pro 
+        } // End Sub KillProcessGroup 
 
 
-    }
-}
+    } // End Class ProcessManager 
+
+
+} // End Namespace RamMonitorPrototype
