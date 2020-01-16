@@ -9,9 +9,15 @@ namespace RamMonitorPrototype
         : System.Attribute
     {
 
+        public string Name;
+
         public MemInfoNameAttribute(string name)
-        { }
+        {
+            this.Name = name;
+        }
+
     }
+
 
     // https://www.thegeekdiary.com/understanding-proc-meminfo-file-analyzing-memory-utilization-in-linux/
     // https://docs.fedoraproject.org/en-US/Fedora/18/html/System_Administrators_Guide/s2-proc-meminfo.html
@@ -97,7 +103,7 @@ namespace RamMonitorPrototype
         [MemInfoName("Active(file)")]
         public ulong Active_file;
 
-        [MemInfoName("Active(file)")]
+        [MemInfoName("Inactive(file)")]
         public ulong Inactive_file;
 
         public ulong Unevictable;
@@ -177,15 +183,38 @@ namespace RamMonitorPrototype
         {
             System.Type t = typeof(LinuxMemoryMetrics);
 
-            System.Collections.Generic.Dictionary<string, ulong> units = 
+            System.Reflection.FieldInfo[] fis = t.GetFields();
+
+            System.Collections.Generic.Dictionary<string, System.Reflection.FieldInfo> fields =
+                new System.Collections.Generic.Dictionary<string, System.Reflection.FieldInfo>(
+                    System.StringComparer.InvariantCultureIgnoreCase
+            );
+
+            System.Collections.Generic.Dictionary<string, ulong> units =
                 new System.Collections.Generic.Dictionary<string, ulong>(
                     System.StringComparer.InvariantCultureIgnoreCase
             );
 
+
+            for (int i = 0; i < fis.Length; ++i)
+            {
+                object[] attrs = fis[i].GetCustomAttributes(typeof(MemInfoNameAttribute), false);
+                if (attrs != null && attrs.Length > 0)
+                {
+                    MemInfoNameAttribute a = (MemInfoNameAttribute)attrs[0];
+                    fields.Add(a.Name, fis[i]);
+                }
+                else
+                {
+                    fields.Add(fis[i].Name, fis[i]);
+                }
+            } // Next i 
+
+
             for (uint i = 1; i < SizeSuffixes.Length; ++i)
             {
                 units.Add(SizeSuffixes[i], Pow(1024, i));
-            }
+            } // Next i 
 
 
             int counter = -1;
@@ -251,38 +280,20 @@ namespace RamMonitorPrototype
                     //dr["Value"] = iAmount;
                     //dr["Unit"] = strUnit;
 
-
-                    System.Reflection.FieldInfo fi = t.GetField(strKey);
+                    System.Reflection.FieldInfo fi = fields[strKey];
                     if (fi != null)
                         fi.SetValue(mem, value);
                     else
-                    {
-                        if ("Active(anon)".Equals(strKey, System.StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            mem.Active_anon = value;
-                        }
-                        else if ("Inactive(anon)".Equals(strKey, System.StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            mem.Inactive_anon = value;
-                        }
-                        else if ("Active(file)".Equals(strKey, System.StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            mem.Active_file = value;
-                        }
-                        else if ("Inactive(file)".Equals(strKey, System.StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            mem.Inactive_file = value;
-                        }
-
-                    } // End else of if (fi != null) 
-
+                        throw new System.NotSupportedException("Unknown field.");
                 } // Whend 
 
                 file.Close();
-            } // End Using System.IO.StreamReader file
+            } // End Using file 
 
-        } // End Function FromMemInfo
+        } // End Function FromMemInfo 
 
 
-    }
-}
+    } // End Class LinuxMemoryMetrics 
+
+
+} // End Namespace RamMonitorPrototype 
