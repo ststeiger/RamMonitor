@@ -1,31 +1,40 @@
 ﻿
 // using Microsoft.Extensions.Logging;
 
-
-using System;
-
 namespace RamMonitorPrototype
 {
+
 
     public class FooLoggerScope<TState>
         : System.IDisposable
     {
         protected FooLogger m_logger;
         protected TState m_scopeName;
-        
+
+
+        public TState ScopeName
+        {
+            get
+            {
+                return this.m_scopeName;
+            }
+        } // End Property ScopeName
+
+
 
         public FooLoggerScope(FooLogger logger, TState scopeName)
         {
             this.m_logger = logger;
             this.m_scopeName = scopeName;
-        }
+        } // End Constructor  
 
 
-        void IDisposable.Dispose()
+        void System.IDisposable.Dispose()
         {
             this.m_logger.EndScope(this.m_scopeName);
-        }
-    }
+        } // End Sub Dispose 
+
+    } // End Class FooLoggerScope 
 
 
 
@@ -40,7 +49,8 @@ namespace RamMonitorPrototype
         protected int m_indentLevel;
         protected System.IO.TextWriter m_textWriter;
 
-        
+
+        protected System.Collections.Generic.LinkedList<object> m_scopes;
 
 
         public FooLogger(Microsoft.Extensions.Logging.ILoggerProvider provider, string categoryName)
@@ -49,20 +59,26 @@ namespace RamMonitorPrototype
             this.m_provider = provider;
             this.m_indentLevel = 0;
             this.m_textWriter = System.Console.Out;
-        }
+            this.m_scopes = new System.Collections.Generic.LinkedList<object>();
+        } // End Constructor 
+
 
         //public FooLogger()
         //    :this(null, null)
         //{ }
 
+
         public void WriteIndent()
         {
-            this.m_textWriter.Write(new String(' ', this.m_indentLevel * NUM_INDENT_SPACES));
-        }
+            this.m_textWriter.Write(new string(' ', this.m_indentLevel * NUM_INDENT_SPACES));
+        } // End Sub WriteIndent 
 
-        
+
         System.IDisposable Microsoft.Extensions.Logging.ILogger.BeginScope<TState>(TState state)
         {
+            FooLoggerScope<TState> scope = new FooLoggerScope<TState>(this, state);
+            this.m_scopes.AddFirst(scope);
+
             this.m_indentLevel++;
             WriteIndent();
             this.m_textWriter.Write("BeginScope<TState>: ");
@@ -71,26 +87,33 @@ namespace RamMonitorPrototype
 
             // this.m_provider.ScopeProvider.Push(state);
             // throw new System.NotImplementedException();
-            return new FooLoggerScope<TState>(this, state);
-        }
+
+            return scope;
+        } // End Function BeginScope 
 
 
         public void EndScope<TState>(TState scopeName)
         {
+            // FooLoggerScope<TState> scope = (FooLoggerScope<TState>)this.m_scopes.First.Value;
+
             this.m_indentLevel--;
 
             WriteIndent();
             this.m_textWriter.Write("EndScope ");
+            // this.m_textWriter.WriteLine(scope.ScopeName);
             this.m_textWriter.WriteLine(scopeName);
 
             this.m_indentLevel--;
-        }
+            this.m_scopes.RemoveFirst();
+        } // End Sub EndScope 
+
 
         bool Microsoft.Extensions.Logging.ILogger.IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
         {
             // return this.m_provider.IsEnabled(logLevel);
             return logLevel >= this.m_logLevel;
-        }
+        } // End Function IsEnabled 
+
 
         void Microsoft.Extensions.Logging.ILogger.Log<TState>(
               Microsoft.Extensions.Logging.LogLevel logLevel
@@ -111,10 +134,11 @@ namespace RamMonitorPrototype
                 WriteIndent();
                 this.m_textWriter.Write("Log<TState>.StackTrace: ");
                 this.m_textWriter.WriteLine(exception.StackTrace);
-            }
-            
-        }
-    }
+            } // End if (exception != null) 
+
+        } // End Sub Log 
+
+    } // End Class FooLogger 
 
 
 
@@ -124,9 +148,16 @@ namespace RamMonitorPrototype
 
         protected System.Collections.Concurrent.ConcurrentDictionary<
             string, Microsoft.Extensions.Logging.ILogger
-            > m_loggers = new System.Collections.Concurrent.ConcurrentDictionary<
+            > m_loggers;
+
+
+        public FooLoggerProvider()
+        {
+            this.m_loggers = new System.Collections.Concurrent.ConcurrentDictionary<
                             string, Microsoft.Extensions.Logging.ILogger
                         >(System.StringComparer.InvariantCultureIgnoreCase);
+        } // End Constructor 
+
 
 
         Microsoft.Extensions.Logging.ILogger Microsoft.Extensions.Logging.ILoggerProvider
@@ -139,7 +170,8 @@ namespace RamMonitorPrototype
                  }
              );
 
-        }
+        } // End Function CreateLogger 
+
 
         #region IDisposable Support
         private bool disposedValue = false; // Dient zur Erkennung redundanter Aufrufe.
@@ -175,7 +207,8 @@ namespace RamMonitorPrototype
             // GC.SuppressFinalize(this);
         }
         #endregion
-    }
+
+    } // End Class FooLoggerProvider 
 
 
     // https://github.com/serilog/serilog
@@ -189,12 +222,12 @@ namespace RamMonitorPrototype
         public FooLoggerFactory(Microsoft.Extensions.Logging.ILoggerProvider provider)
         {
             this.m_provider = provider;
-        }
+        } // End Construtor 
 
 
         public FooLoggerFactory()
-            :this(new FooLoggerProvider())
-        { }
+            : this(new FooLoggerProvider())
+        { } // End Construtor 
 
 
         void Microsoft.Extensions.Logging.ILoggerFactory.AddProvider(
@@ -203,20 +236,23 @@ namespace RamMonitorPrototype
             this.m_provider = provider;
 
             throw new System.InvalidOperationException("Ignoring added logger provider");
-        }
+        } // End Sub AddProvider 
+
 
         Microsoft.Extensions.Logging.ILogger Microsoft.Extensions.Logging.ILoggerFactory
             .CreateLogger(string categoryName)
         {
             return this.m_provider.CreateLogger(categoryName);
-        }
+        } // End Function CreateLogger 
+
 
         void System.IDisposable.Dispose()
         {
             this.m_provider.Dispose();
-        }
-
-    }
+        } // End Sub Dispose 
 
 
-}
+    } // End Class FooLoggerFactory 
+
+
+} // End Namespace RamMonitorPrototype 

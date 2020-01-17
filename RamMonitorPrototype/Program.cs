@@ -10,6 +10,59 @@ namespace RamMonitorPrototype
     {
 
 
+        /*
+https://devblogs.microsoft.com/dotnet/introducing-net-5/
+https://andrewlock.net/creating-a-rolling-file-logging-provider-for-asp-net-core-2-0/
+https://devblogs.microsoft.com/dotnet/collecting-and-analyzing-memory-dumps/
+https://devblogs.microsoft.com/dotnet/an-introduction-to-dataframe/
+https://devblogs.microsoft.com/dotnet/updates-to-net-core-windows-forms-designer-in-visual-studio-16-5-preview-1/
+https://github.com/NickFane/NetCoreWorkerService
+https://nblumhardt.com/2016/10/aspnet-core-file-logger/
+https://visualstudiomagazine.com/articles/2019/03/22/logging-in-net-core.aspx
+https://dotnetcoretutorials.com/2018/04/12/using-the-ilogger-beginscope-in-asp-net-core/
+https://thinkrethink.net/2017/03/09/application-shutdown-in-asp-net-core/
+https://csharp.christiannagel.com/2018/11/13/iloggertofile/
+https://stackify.com/asp-net-core-logging-what-changed/
+https://gunnarpeipman.com/aspnet-core-file-logging/
+https://www.citusdata.com/blog/2018/01/22/multi-tenant-web-apps-with-dot-net-core-and-postgres/
+https://www.mikesdotnetting.com/article/342/managing-authentication-token-expiry-in-webassembly-based-blazor
+https://stebet.net/mocking-jwt-tokens-in-asp-net-core-integration-tests/
+https://wildermuth.com/2018/04/10/Using-JwtBearer-Authentication-in-an-API-only-ASP-NET-Core-Project
+https://jasonwatmore.com/post/2018/08/14/aspnet-core-21-jwt-authentication-tutorial-with-example-api
+https://builtwithdot.net/blog/fluent-apis-make-developers-love-using-your-net-libraries
+
+
+
+https://medium.com/@nickfane/introduction-to-worker-services-in-net-core-3-0-4bb3fc631225
+https://andrewlock.net/introducing-ihostlifetime-and-untangling-the-generic-host-startup-interactions/
+https://andrewlock.net/new-in-aspnetcore-3-structured-logging-for-startup-messages/
+http://www.dotnetspeak.com/net-core/creating-schedule-driven-windows-service-in-net-core-3-0/
+
+
+https://devblogs.microsoft.com/dotnet/
+https://github.com/RickStrahl
+https://github.com/filipw
+
+
+https://www.strathweb.com/
+https://visualstudiomagazine.com
+https://dotnetcoretutorials.com
+https://www.citusdata.com/blog/
+https://developers.redhat.com/blog/category/products/infrastructure/rhel/dot-net/
+https://thomaslevesque.com/about/
+https://blog.codinghorror.com/
+http://james.newtonking.com/
+https://wildermuth.com/
+https://odetocode.com/blogs/scott
+https://nblumhardt.com
+https://medium.com/@nickfane
+https://weblog.west-wind.com/
+https://blog.noser.com/
+
+*/
+
+        // https://github.com/dotnet/corefx/issues/32888
+        // https://devblogs.microsoft.com/dotnet/introducing-net-5/
         static void Main(string[] args)
         {
             MainTask.Start(args).Wait();

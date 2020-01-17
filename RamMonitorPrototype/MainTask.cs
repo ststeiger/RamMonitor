@@ -108,6 +108,14 @@ namespace RamMonitorPrototype
                     .ConfigureServices(delegate (HostBuilderContext hostContext, IServiceCollection services)
                     {
                         // System.IServiceProvider isp = services.BuildServiceProvider();
+
+                        services.Configure(
+                            delegate(ConsoleLifetimeOptions options ) 
+                            {
+                                options.SuppressStatusMessages = true;
+                            }
+                        ); 
+
                         services.AddSingleton<Microsoft.Extensions.Hosting.IHostLifetime, foo>();
                         services.AddHostedService<TheService>();
                     }

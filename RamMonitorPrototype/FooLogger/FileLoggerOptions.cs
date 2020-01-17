@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace RamMonitorPrototype
 {
 
@@ -14,4 +11,5 @@ namespace RamMonitorPrototype
             Microsoft.Extensions.Logging.LogLevel.Information;
 
     }
+
 }

@@ -47,7 +47,7 @@ namespace RamMonitorPrototype
             } // End Scope Checking mail
 
 
-            while (this.m_run)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 this.m_logger.LogInformation("foobar", "foo", 123);
                 System.Console.Write("Heartbeat: ");
