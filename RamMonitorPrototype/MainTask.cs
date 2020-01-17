@@ -104,6 +104,8 @@ namespace RamMonitorPrototype
 
                         // configLogging.AddConsole();
                         // configLogging.AddDebug();
+                        // configLogging.AddEventSourceLogger();
+                        // configLogging.AddEventLog();
                     })
                     .ConfigureServices(delegate (HostBuilderContext hostContext, IServiceCollection services)
                     {
