@@ -1,4 +1,6 @@
 ﻿
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -9,6 +11,22 @@ using Microsoft.Extensions.Options;
 
 namespace RamMonitorPrototype
 {
+
+    public class foo
+        : Microsoft.Extensions.Hosting.IHostLifetime
+    {
+        Task IHostLifetime.StopAsync(CancellationToken cancellationToken)
+        {
+            TestMessage.MsgBox("StopAsync");
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        Task IHostLifetime.WaitForStartAsync(CancellationToken cancellationToken)
+        {
+            TestMessage.MsgBox("WaitForStartAsync");
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+    }
 
 
     public class MainTask
@@ -90,10 +108,15 @@ namespace RamMonitorPrototype
                     .ConfigureServices(delegate (HostBuilderContext hostContext, IServiceCollection services)
                     {
                         // System.IServiceProvider isp = services.BuildServiceProvider();
-                        
+                        services.AddSingleton<Microsoft.Extensions.Hosting.IHostLifetime, foo>();
                         services.AddHostedService<TheService>();
                     }
-            );
+            )
+            .UseConsoleLifetime()
+            // .UseServiceBaseLifetime()
+            ;
+
+            System.AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
 
             if (isService)
@@ -112,6 +135,12 @@ namespace RamMonitorPrototype
             */
         } // End Sub MainTask 
 
+
+
+        // https://andrewlock.net/introducing-ihostlifetime-and-untangling-the-generic-host-startup-interactions/
+        public static void OnProcessExit(object sender, System.EventArgs e)
+        {
+        }
 
 
     }
