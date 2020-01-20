@@ -92,16 +92,20 @@ namespace RamMonitor
             
             while (!stoppingToken.IsCancellationRequested)
             {
-                
                 GlobalMemoryMetrics metrics = OsInfo.MemoryMetrics;
                 System.Console.WriteLine(metrics.Load);
                 System.Console.WriteLine(metrics.SwapLoad);
                 System.Console.WriteLine("Dump:");
                 metrics.WriteMemory(ctw);
                 
+                
                 m_logger.LogInformation("Worker running at: {time}", System.DateTimeOffset.Now);
                 m_logger.LogInformation(ctw.StringValue);
                 
+                
+                ProcessMemoryMetrics processMemory = RamMonitorPrototype.ProcessManager.GetProcessGroupMemory("chrome");
+                processMemory.WriteMemory(ctw);
+                m_logger.LogInformation("Chrome memory dump: {time}\r\n" + ctw.StringValue, System.DateTimeOffset.Now);
                 
                 await System.Threading.Tasks.Task.Delay(1000, stoppingToken);
             } // Whend 
