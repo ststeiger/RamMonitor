@@ -23,29 +23,32 @@ namespace RamMonitor
             // return Host.CreateDefaultBuilder(args).ConfigureServices((hostContext, services) => { services.AddHostedService<Worker>(); });
             
             return Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    var builder = new ConfigurationBuilder()
-                        .SetBasePath(System.IO.Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: false, reloadOnChange: true)
-                        .AddEnvironmentVariables()
-                        .Build();
-                })
-                .ConfigureServices((hostingContext, services) =>
-                {
-                    // AWSSDK.Extensions.NETCore.Setup
-                    // AWSSDK.SQS
-                    // Microsoft.VisualStudio.Azure.Containers.Tools.Targets
-                    
-                    // AWS Configuration
-                    // var options = hostingContext.Configuration.GetAWSOptions();
-                    // services.AddDefaultAWSOptions(options);
-                    // services.AddAWSService<IAmazonSQS>();
+                .ConfigureAppConfiguration(
+                    delegate(HostBuilderContext hostingContext, IConfigurationBuilder config)
+                    {
+                        var builder = new ConfigurationBuilder()
+                            .SetBasePath(System.IO.Directory.GetCurrentDirectory())
+                            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                            .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                            .AddEnvironmentVariables()
+                            .Build();
+                    })
+                .ConfigureServices(
+                    delegate(HostBuilderContext hostingContext, IServiceCollection services) 
+                    {
+                        // AWSSDK.Extensions.NETCore.Setup
+                        // AWSSDK.SQS
+                        // Microsoft.VisualStudio.Azure.Containers.Tools.Targets
+                        
+                        // AWS Configuration
+                        // var options = hostingContext.Configuration.GetAWSOptions();
+                        // services.AddDefaultAWSOptions(options);
+                        // services.AddAWSService<IAmazonSQS>();
 
-                    // Worker Service
-                    services.AddHostedService<Worker>();
-                });
+                        // Worker Service
+                        services.AddHostedService<Worker>();
+                    }
+                );
             
         } // End Function CreateHostBuilder 
         
