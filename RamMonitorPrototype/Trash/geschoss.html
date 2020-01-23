@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+
+
+    <title>Geschoss-Beispiel</title>
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: 100%
+        }
+
+        body {
+            #background: #1e90ff;
+            background: white;
+        }
+    </style>
+
+
+    <!--
+        <link rel = "stylesheet" type = "text/css" href="../w8/Layout.ashx?Single=COR_Resources:SlickGrid/slick.grid.cor.css" />
+        
+        <script type="text/javascript" src="../w8/Script.ashx?Single=turnJS.jquery-1.7.2.min.js"></script>
+    -->
+
+    <style>
+        .floorTable {
+            width: 100%;
+        }
+
+
+        .floorTable td {
+            font-family: 'Helvetica';
+            font-weight: normal;
+            font-size: 42px;
+            writing-mode: lr-tb;
+            color: #000;
+            padding: 2mm;
+        }
+
+        .floorHeader {
+            font-family: 'Helvetica';
+            font-weight: bold;
+            font-size: 54px;
+            writing-mode: lr-tb;
+            color: #000;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .current {
+            background-color: #ff9d1e !important;
+        }
+
+        .gray {
+            background-color: #b9b9b9;
+        }
+
+    </style>
+
+    <script>
+
+    </script>
+</head>
+
+<body>
+    <div>
+        <h1 class="floorHeader">L28</h1>
+        <table class="floorTable" style="width:100%">
+            <tbody>
+
+                <tr class="gray current">
+                    <td>Dachgeschoss</td>
+                    <td>Quadro</td>
+                    <td>Rondo</td>
+                    <td>Longo</td>
+                </tr>
+                <tr class="gray">
+                    <td>2.Obergeschoss</td>
+                    <td>Quadro</td>
+                    <td>Rondo</td>
+                    <td>Longo</td>
+                </tr>
+                <tr class="gray">
+                    <td>1.Obergeschoss</td>
+                    <td>Quadro</td>
+                    <td>Rondo</td>
+                    <td>Longo</td>
+                </tr>
+                <tr class="gray">
+                    <td>Erdgeschoss</td>
+                    <td>Quadro</td>
+                    <td>Rondo</td>
+                    <td>Longo</td>
+                </tr>
+                <tr class="gray">
+                    <td>1. Untergeschoss</td>
+                    <td>Quadro</td>
+                    <td>Rondo</td>
+                    <td>Longo</td>
+                </tr>
+            </tbody>
+
+        </table>
+    </div>
+
+
+
+
+
+    <script>
+        var x = `
+SELECT
+     T_AP_Trakt.TK_UID
+    ,T_AP_Trakt.TK_Nr
+    ,T_AP_Trakt.TK_Bezeichnung
+FROM T_AP_Trakt
+WHERE (1=1)
+AND T_AP_Trakt.TK_Status = 1
+AND CURRENT_TIMESTAMP BETWEEN T_AP_Trakt.TK_DatumVon AND T_AP_Trakt.TK_DatumBis
+AND T_AP_Trakt.TK_GB_UID = '5F495EBF-CC51-477E-A03C-919F7DF30C0A'
+`;
+
+
+        var globj = {
+            header: "L281"
+            , svg_uid: "1234"
+            , geschosse: ["Dachgeschoss"
+                , "2. Obergeschoss"
+                , "1. Obergeschoss"
+                , "Erdgeschoss"
+                , "1. Untergeschoss"
+                , "2. Untergeschoss"]
+
+            , trakte: ["Quadro", "Rondo", "Longo"]
+        };
+
+
+
+        function createTable(obj)
+        {
+            // <div> <h1 class="floorHeader">L28</h1>
+            var div = document.createElement("div");
+
+            // <h1 class="floorHeader">L28</h1>
+            var h1 = document.createElement("h1");
+            h1.appendChild(document.createTextNode(obj.header));
+            h1.setAttribute("class", "floorHeader");
+            div.appendChild(h1);
+
+
+            var tbl = document.createElement("table");
+            tbl.setAttribute("class", "floorTable");
+
+            var bdy = document.createElement("tbody");
+
+            for (var i = 0; i < obj.geschosse.length; ++i)
+            {
+                var tr = document.createElement("tr");
+                if (i == 0)
+                    tr.setAttribute("class", "current");
+                else
+                    tr.setAttribute("class", "gray");
+
+
+
+                var td = document.createElement("td");
+                td.appendChild(document.createTextNode(obj.geschosse[i]));
+                tr.appendChild(td);
+
+                for (var j = 0; j < obj.trakte.length; ++j)
+                {
+                    td = document.createElement("td");
+                    td.appendChild(document.createTextNode(obj.trakte[j]));
+                    tr.appendChild(td);
+                }
+
+                bdy.appendChild(tr);
+            }
+
+
+
+
+            tbl.appendChild(bdy);
+            div.appendChild(tbl);
+
+
+            document.body.appendChild(div);
+        }
+
+        createTable(globj);
+
+
+    </script>
+
+
+
+
+</body>
+</html>

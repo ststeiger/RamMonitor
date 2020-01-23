@@ -1,6 +1,5 @@
 
-using System.Data;
-using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,408 +10,123 @@ using Microsoft.Extensions.Logging.EventLog;
 
 namespace RamMonitor
 {
-    public enum RenderType
+    
+    public interface IBaseDAL
     {
-        Pretty,
-        Ugly,
-        Minified
+        public string Con { get; set; }
     }
-
-
-    public class HtmlElement
+    
+    
+    public interface IReadDal
+        :IBaseDAL
     {
-        protected string m_tagName;
-        protected string m_textContent;
 
-        protected System.Collections.Generic.List<HtmlElement> m_childList;
-        protected System.Collections.Generic.Dictionary<string, string> m_attributeList;
-        
-        
-        public HtmlElement(string tagName)
+        public string GetData()
         {
-            this.m_tagName = tagName;
+            System.Console.Write("Get Data: ");
+            return "abc";
         }
 
-        public void appendChild(HtmlElement ele)
-        {
-            if(this.m_childList == null)
-                this.m_childList = new System.Collections.Generic.List<HtmlElement>();
-            
-            this.m_childList.Add(ele);
-        }
+    }
+    
+    public interface IWriteDal
+        :IBaseDAL
+    {
 
-        public void setAttribute(string attributeName, string attributeValue)
+        public void WriteData(string str)
         {
-            if (this.m_attributeList == null)
-                this.m_attributeList = new System.Collections.Generic.Dictionary<string, string>();
-            
-            this.m_attributeList[attributeName] = System.Web.HttpUtility.HtmlAttributeEncode(attributeValue);
-        }
-        
-        public void appendChild(string ele)
-        {
-            this.m_textContent = ele;
-        }
-        
-        
-        public string render()
-        {
-            return render(RenderType.Pretty);
-        }
-        
-        public string render(RenderType prettyPrint)
-        {
-            return render(prettyPrint, 0);
-        }
-        
-
-        public string render(RenderType prettyPrint, int indentLevel)
-        {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            
-            if ((prettyPrint == RenderType.Pretty)  && indentLevel != 0)
-            {
-                sb.Append("".PadRight( 3 * indentLevel, ' '));    
-            }
-
-            
-            
-            
-            sb.Append("<");
-            sb.Append(m_tagName);
-
-            if (this.m_attributeList != null)
-            {
-                foreach (string attributeName in this.m_attributeList.Keys)
-                {
-                    sb.Append(" ");
-                    sb.Append(attributeName);
-                    sb.Append("=\"");
-                    sb.Append(this.m_attributeList[attributeName]);
-                    sb.Append("\"");
-                }
-                
-            }
-
-            
-            sb.Append(">");
-            
-            if ((prettyPrint != RenderType.Minified) && this.m_textContent == null)
-                sb.AppendLine();
-                
-            
-            
-            if (this.m_childList != null)
-            {
-                for (int i = 0; i < this.m_childList.Count; i++)
-                {
-                    sb.Append( this.m_childList[i].render(prettyPrint, indentLevel+1));
-                }
-                
-            }
-            
-            if (this.m_textContent != null)
-            {
-                sb.Append(this.m_textContent);
-            }
-            else
-            {
-                if ((prettyPrint == RenderType.Pretty) && indentLevel != 0)
-                {
-                    sb.Append("".PadRight( 3 * indentLevel, ' '));    
-                }    
-            }
-
-            
-            
-            sb.Append("</");
-            sb.Append(this.m_tagName);
-            if(prettyPrint == RenderType.Minified)
-                sb.Append(">");
-            else
-                sb.AppendLine(">");
-            
-            string ret = sb.ToString();
-            sb.Clear();
-            sb = null;
-            return ret;
+            System.Console.WriteLine("Write Data: " + str);
         }
 
     }
 
-
-    public class document
+    public interface IReadWriteDal
+        : IReadDal, IWriteDal
     {
-
-        public static HtmlElement createElement(string tagName)
-        {
-            return new HtmlElement(tagName);
-        }
-        
-        
-        public static string createTextNode(string text)
-        {
-            return System.Web.HttpUtility.HtmlEncode(text);
-        }
-
     }
 
 
+    public static class mmmm
+    {
+        
+        public static void Log(this IWriteDal foo, System.Exception ex)
+        {
+            foo.WriteData( ex.ToString());        
+        }
+        
+    }
 
-    public class Program
+    public class DalFields
+    {
+        protected string m_con;
+        protected string m_ReadCon;
+        protected string m_WriteCon;
+        
+        
+        public string Con 
+        {
+            get { return m_con;}
+            set {
+                m_con = value;
+            }
+        }
+        
+    }
+    
+    public class MsSqlReadWriteDal
+        :DalFields, IReadWriteDal
+    {
+        
+        public MsSqlReadWriteDal()
+        {
+            this.m_con ="Hi";
+            this.m_ReadCon ="Helloo";
+            this.m_WriteCon ="Howdy";
+        }
+
+        // string IBaseDAL.Con { get; set; }
+    }
+    
+    
+    public static class Program
     {
         
         
-        public static uint ConvertFromIpAddressToInteger(string ipAddress)
+        public static void FactoryTest()
         {
-            System.Net.IPAddress address = System.Net.IPAddress.Parse(ipAddress);
-            byte[] bytes = address.GetAddressBytes();
-
-            // flip big-endian(network order) to little-endian
-            if (System.BitConverter.IsLittleEndian)
-            {
-                System.Array.Reverse(bytes);
-            }
-
-            return System.BitConverter.ToUInt32(bytes, 0);
-        }
-        
-        
-        public static string ConvertFromIntegerToIpAddress(uint ipAddress)
-        {
-            byte[] bytes = System.BitConverter.GetBytes(ipAddress);
-
-            // flip little-endian to big-endian(network order)
-            if (System.BitConverter.IsLittleEndian)
-            {
-                System.Array.Reverse(bytes);
-            }
-
-            // IP addresses are in network order (big-endian), while ints are little-endian on Windows,
-            // so to get a correct value, you must reverse the bytes before converting on a little-endian system.
-
-            return new System.Net.IPAddress(bytes).ToString();
-        }
-        
-        
-        public static void Ip2Num(int first, int second, int third, int fourth)
-        {
-            // int num =  (first << 24) | (second << 16) | (third << 8) | (fourth);
-            int num = (fourth << 24) | (third << 16) | (second << 8) | (first);
-
-            long numIP = System.Net.IPAddress.Parse($"{first}.{second}.{third}.{fourth}").Address;
-
-            // Here's a pair of methods to convert from IPv4 to a correct integer and back:
-            uint foo = ConvertFromIpAddressToInteger($"{first}.{second}.{third}.{fourth}");
-
-
-
-            System.Net.WebUtility.HtmlEncode("foobar");
-            
-            System.Web.HttpUtility.HtmlEncode("foobar");
-            
-
-            System.Console.WriteLine(num);
-            System.Console.WriteLine(numIP);
-            System.Console.WriteLine(foo);
-        }
-
-
-
-        public static void foobar()
-        {
-            System.Data.Common.DbProviderFactory fac = Microsoft.Data.SqlClient.SqlClientFactory.Instance;
-
-
-            Microsoft.Data.SqlClient.SqlConnectionStringBuilder csb = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder();
-            csb.InitialCatalog = "COR_Basic_Sonova";
-            csb.DataSource = System.Environment.MachineName + @"\SQLEXPRESS";
-            csb.IntegratedSecurity = true;
-            csb.Pooling = true;
-            csb.PacketSize = 4096;
-            
-            if(!csb.IntegratedSecurity)
-            {
-                csb.UserID = "";
-                csb.Password = "";
-            }
-            
-            using (System.Data.Common.DbConnection conn = fac.CreateConnection())
-            {
-                conn.ConnectionString = csb.ConnectionString;
-                
-                if(conn.State != System.Data.ConnectionState.Open)
-                    conn.Open();
-                
-                using (System.Data.Common.DbCommand cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = @"
-SELECT
-     T_AP_Trakt.TK_UID
-    ,T_AP_Trakt.TK_Nr
-    ,T_AP_Trakt.TK_Bezeichnung
-FROM T_AP_Trakt
-WHERE (1=1)
-AND T_AP_Trakt.TK_Status = 1
-AND CURRENT_TIMESTAMP BETWEEN T_AP_Trakt.TK_DatumVon AND T_AP_Trakt.TK_DatumBis
-AND T_AP_Trakt.TK_GB_UID = '5F495EBF-CC51-477E-A03C-919F7DF30C0A'
-";
-
-                    using (System.Data.Common.DbDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.HasRows)
-                        {
-                            while (reader.Read())
-                            {
-                                for (int i = 0; i < reader.FieldCount; ++i)
-                                {
-                                    string name = reader.GetName(i);
-                                    System.Console.WriteLine("{0}: \t{1}", name, reader.GetValue(i));
-                                }
-                            }
-                        }
-                        else
-                        {
-                            System.Console.WriteLine("No rows found.");
-                        }
-                    }
-                }
-                
-                if(conn.State != System.Data.ConnectionState.Closed)
-                    conn.Close();
-            }
-
+            MsSqlReadWriteDal omg = new MsSqlReadWriteDal();
             
             
-        }
-
-        public static void RenderDom(string header, string svg_uid, string[] geschosse, string[] trakte)
-        {
-            // <div> <h1 class="floorHeader">L28</h1>
-            var div = document.createElement("div");
-
-            // <h1 class="floorHeader">L28</h1>
-            var h1 = document.createElement("h1");
-            h1.appendChild(document.createTextNode(header));
-            h1.setAttribute("class", "floorHeader");
-            div.appendChild(h1);
-
-
-            var tbl = document.createElement("table");
-            tbl.setAttribute("class", "floorTable");
-
-            var bdy = document.createElement("tbody");
-
-            for (var i = 0; i < geschosse.Length; ++i)
-            {
-                var tr = document.createElement("tr");
-                if (i == 0)
-                    tr.setAttribute("class", "current");
-                else
-                    tr.setAttribute("class", "gray");
-
-
-
-                var td = document.createElement("td");
-                td.appendChild(document.createTextNode(geschosse[i]));
-                tr.appendChild(td);
-
-                for (var j = 0; j < trakte.Length; ++j)
-                {
-                    td = document.createElement("td");
-                    td.appendChild(document.createTextNode(trakte[j]));
-                    tr.appendChild(td);
-                }
-
-                bdy.appendChild(tr);
-            }
+            // System.Console.WriteLine(omg.Con);
+            System.Console.WriteLine(((IReadDal)omg).Con);
+            System.Console.WriteLine(((IWriteDal)omg).Con);
+            
+            System.Console.WriteLine(((IReadDal)omg).GetData());
+            ((IWriteDal)omg).WriteData("foobar");
+            
+            System.Console.WriteLine(((IReadWriteDal)omg).GetData());
+            ((IReadWriteDal)omg).WriteData("foobar");
             
             
-            tbl.appendChild(bdy);
-            div.appendChild(tbl);
+            MsSqlReadWriteDal omg2 = (MsSqlReadWriteDal) ((IReadWriteDal)omg);
+            System.Console.WriteLine("omg2: ");
+            System.Console.WriteLine(omg2.Con);
             
-            string output = div.render(RenderType.Pretty);
-            
-            System.Console.WriteLine(output);
-        }
-        
-        public static void RenderGeschoss(string header, string svg_uid, string[] geschosse, string[] trakte)
-        {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            
-            // <div> <h1 class="floorHeader">L28</h1>
-            sb.AppendLine("<div>");
-            sb.Append("<h1 class=\"floorHeader\">");
-            sb.Append(System.Web.HttpUtility.HtmlEncode( header));
-            sb.AppendLine("</h1>");
-            
-            
-            sb.AppendLine("<table class=\"floorTable\">");
-            sb.AppendLine("<tbody>");
-            
-            
-            for (int i = 0; i < geschosse.Length; ++i)
-            {
-                sb.Append("<tr class=\"");
-                
-                if (i == 0)
-                    sb.AppendLine("current");
-                else
-                    sb.AppendLine("gray");
-                
-                sb.AppendLine("\">");
-                
-                sb.Append("<td>");
-                sb.Append(System.Web.HttpUtility.HtmlEncode( geschosse[i]));
-                sb.AppendLine("</td>");
-                
-                
-                for (var j = 0; j < trakte.Length; ++j)
-                {
-                    sb.Append("<td>");
-                    sb.Append(System.Web.HttpUtility.HtmlEncode( trakte[j]));
-                    sb.AppendLine("</td>");
-                }
-                sb.AppendLine("</tr>");
-            }
-
-
-            sb.AppendLine("</tbody>");
-            sb.AppendLine("</table>");
-            sb.AppendLine("</div>");
-
-            string str = sb.ToString();
-            System.Console.WriteLine(str);
+            // ((IReadWriteDal)omg).Log(1, "Hello");
+            System.Console.ReadKey();
         }
 
 
         public static void Main(string[] args)
         {
-            foobar();
+            FactoryTest();
             
-            RenderDom("L281 XXX", "1234"
-                , new string[]{"Dachgeschoss", "2. Obergeschoss", "1. Obergeschoss", "Erdgeschoss", "1. Untergeschoss", "2. Untergeschoss"}
-                ,new string[] { "Quadro", "Rondo", "Longo" }
-            );
-            
-            
-            RenderGeschoss("L281 XXX", "1234"
-                , new string[]{"Dachgeschoss", "2. Obergeschoss", "1. Obergeschoss", "Erdgeschoss", "1. Untergeschoss", "2. Untergeschoss"}
-                ,new string[] { "Quadro", "Rondo", "Longo" }
-            );
-            
-            
-            
-            
-            
-            // Ip2Num(127, 0, 0, 1);
-
             CreateHostBuilder(args).Build().Run();
         } // End Sub Main 
 
 
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
+        private static IHostBuilder CreateHostBuilder(string[] args)
         {
             IHostBuilder builder = new HostBuilder();
 
@@ -497,7 +211,7 @@ AND T_AP_Trakt.TK_GB_UID = '5F495EBF-CC51-477E-A03C-919F7DF30C0A'
         }
         
         
-        public static IHostBuilder OldCreateHostBuilder(string[] args)
+        private static IHostBuilder OldCreateHostBuilder(string[] args)
         {
             // return Host.CreateDefaultBuilder(args).ConfigureServices((hostContext, services) => { services.AddHostedService<Worker>(); });
             
