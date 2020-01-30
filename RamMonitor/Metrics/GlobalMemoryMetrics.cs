@@ -100,10 +100,17 @@ namespace RamMonitorPrototype
               { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 
 
-        protected string SizeSuffix(ulong value, int decimalPlaces = 1)
-        {
-            // if (value < 0) { return "-" + SizeSuffix(-value); }
 
+        protected string SizeSuffix(ulong value)
+        {
+            return SizeSuffix(value, 1);
+        }
+
+
+        protected string SizeSuffix(ulong value, int decimalPlaces)
+        {
+            // if (value < 0)  {  return "-" + SizeSuffix(-value, decimalPlaces);  }
+            
             int i = 0;
             decimal dValue = (decimal)value;
             while (System.Math.Round(dValue, decimalPlaces) >= 1000)
