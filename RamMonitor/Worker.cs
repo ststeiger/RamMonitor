@@ -1,11 +1,17 @@
 
-using RamMonitorPrototype;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 
 // http://www.dotnetspeak.com/net-core/creating-schedule-driven-windows-service-in-net-core-3-0/
 // https://andrewlock.net/new-in-aspnetcore-3-structured-logging-for-startup-messages/
 // https://andrewlock.net/suppressing-the-startup-and-shutdown-messages-in-asp-net-core/
+
+
+// dotnet restore -r win-x86
+// dotnet build -r win-x86
+// dotnet publish -f netcoreapp3.1 -c Release -r win-x86
+
 namespace RamMonitor
 {
     
@@ -59,10 +65,22 @@ namespace RamMonitor
     {
         
         private readonly ILogger<Worker> m_logger;
+        private readonly int m_maxLoadRatioBeforeKill;
         
         
-        public Worker(ILogger<Worker> logger)
+        public Worker(ILogger<Worker> logger, IConfiguration conf)
         {
+
+            IConfigurationSection section = conf.GetSection("KillChromeLoadRatio");
+            
+            int killChromeLoadRatio = 79;
+            if (section != null && !string.IsNullOrEmpty(section.Value))
+            {
+                if (!int.TryParse(section.Value, out killChromeLoadRatio))
+                    killChromeLoadRatio = 79;
+            }
+            
+            this.m_maxLoadRatioBeforeKill = killChromeLoadRatio;
             this.m_logger = logger;
         } // End Constructor 
         
@@ -74,14 +92,18 @@ namespace RamMonitor
             while (!stoppingToken.IsCancellationRequested)
             {
                 GlobalMemoryMetrics metrics = OsInfo.MemoryMetrics;
-                System.Console.WriteLine(metrics.Load);
-                System.Console.WriteLine(metrics.SwapLoad);
-                System.Console.WriteLine("Dump:");
                 metrics.WriteMemory(ctw);
+                
+                if (metrics.Load > this.m_maxLoadRatioBeforeKill)
+                {
+                    this.m_logger.LogInformation("Killing chrome processes at: {time}", System.DateTimeOffset.Now);
+                    ProcessManager.KillProcessGroup("chrome");
+                    this.m_logger.LogInformation("Killed chrome processes at: {time}", System.DateTimeOffset.Now);
+                } // End if (metrics.Load > this.m_maxLoadRatioBeforeKill)
                 
                 this.m_logger.LogInformation("Worker running at: {time}", System.DateTimeOffset.Now);
                 this.m_logger.LogInformation(ctw.StringValue);
-                
+                // KillChromeLoadRatio
                 await System.Threading.Tasks.Task.Delay(1000, stoppingToken);
             } // Whend 
             

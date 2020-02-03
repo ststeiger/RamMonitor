@@ -1,5 +1,5 @@
 ﻿
-namespace RamMonitorPrototype
+namespace RamMonitor
 {
 
 
@@ -147,7 +147,8 @@ namespace RamMonitorPrototype
                 // output.Write(value.ToString("N0"));
                 output.WriteLine(GetSize(value));
             }
-
+            
+            output.Flush();
         }
 
 
