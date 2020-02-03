@@ -12,7 +12,7 @@ namespace RamMonitor
 {
     
     
-    public static class Program
+            public static class Program
     {
         
 
@@ -29,7 +29,7 @@ namespace RamMonitor
 
             builder.UseContentRoot(System.IO.Directory.GetCurrentDirectory());
             builder.ConfigureHostConfiguration(config =>
-            {
+            {    
                 config.AddEnvironmentVariables(prefix: "DOTNET_");
                 if (args != null)
                 {

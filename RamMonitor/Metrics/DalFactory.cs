@@ -1,10 +1,8 @@
 ﻿
 #if false
 
-
-namespace RamMonitorPrototype
+namespace RamMonitor
 {
-    
     
     public interface IBaseDAL
     {
@@ -81,15 +79,12 @@ namespace RamMonitorPrototype
 
         // string IBaseDAL.Con { get; set; }
     }
-
-
-    public class DalFactory
+    
+    
+    public static class DalFactory
     {
-        public static void Test()
-        {
-            FactoryTest();
-        }
-
+        
+        
         public static void FactoryTest()
         {
             MsSqlReadWriteDal omg = new MsSqlReadWriteDal();
@@ -114,7 +109,16 @@ namespace RamMonitorPrototype
             System.Console.ReadKey();
         }
 
-    }
-}
+
+        public static void Test()
+        {
+            FactoryTest();
+        } // End Sub Main 
+
+
+    } // End Class Program 
+    
+    
+} // End Namespace RamMonitor 
 
 #endif 
