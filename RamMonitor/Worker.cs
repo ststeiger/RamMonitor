@@ -12,52 +12,9 @@ using Microsoft.Extensions.Logging;
 // dotnet build -r win-x86
 // dotnet publish -f netcoreapp3.1 -c Release -r win-x86
 
+
 namespace RamMonitor
 {
-    
-    
-    public class CollectingTextWriter
-        : System.IO.TextWriter
-    {
-
-        protected System.Text.StringBuilder m_sb;
-        
-        
-        public string StringValue
-        {
-            get
-            {
-                string ret = this.m_sb.ToString();
-                this.m_sb.Clear();
-                return ret;
-            }
-        }
-        
-        
-        public override System.Text.Encoding Encoding
-        {
-            get { return System.Text.Encoding.Default; }
-        }
-        
-
-        public CollectingTextWriter()
-        {
-            this.m_sb = new System.Text.StringBuilder();
-        }
-        
-        ~CollectingTextWriter()  
-        {
-            this.m_sb.Clear();
-            this.m_sb = null;
-        } // Destructor 
-        
-        
-        public override void Write(char value)
-        {
-            this.m_sb.Append(value);
-        }
-        
-    } // End Class CollectingTextWriter
     
     
     public class Worker 
@@ -66,21 +23,16 @@ namespace RamMonitor
         
         private readonly ILogger<Worker> m_logger;
         private readonly int m_maxLoadRatioBeforeKill;
+        private readonly int m_measureInterval;
         
         
         public Worker(ILogger<Worker> logger, IConfiguration conf)
         {
-
-            IConfigurationSection section = conf.GetSection("KillChromeLoadRatio");
+            IConfigurationSection section = conf.GetSection("KillSettings");
             
-            int killChromeLoadRatio = 79;
-            if (section != null && !string.IsNullOrEmpty(section.Value))
-            {
-                if (!int.TryParse(section.Value, out killChromeLoadRatio))
-                    killChromeLoadRatio = 79;
-            }
+            this.m_maxLoadRatioBeforeKill = section.TryGetValue<int>("KillChromeLoadRatio", 79);
+            this.m_measureInterval = section.TryGetValue<int>("MeasureInterval", 5000);
             
-            this.m_maxLoadRatioBeforeKill = killChromeLoadRatio;
             this.m_logger = logger;
         } // End Constructor 
         
@@ -104,7 +56,7 @@ namespace RamMonitor
                 this.m_logger.LogInformation("Worker running at: {time}", System.DateTimeOffset.Now);
                 this.m_logger.LogInformation(ctw.StringValue);
                 // KillChromeLoadRatio
-                await System.Threading.Tasks.Task.Delay(1000, stoppingToken);
+                await System.Threading.Tasks.Task.Delay(this.m_measureInterval, stoppingToken);
             } // Whend 
             
         } // End Task ExecuteAsync 
