@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 // dotnet restore -r win-x86
 // dotnet build -r win-x86
 // dotnet publish -f netcoreapp3.1 -c Release -r win-x86
+// dotnet publish -f netcoreapp3.1 -c Release -r win-x86 -o D:\inetpub\RamMonitor
 
 
 namespace RamMonitor
