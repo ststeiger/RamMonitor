@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
+
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +12,12 @@ using Microsoft.Extensions.Logging.EventLog;
 
 namespace RamMonitor
 {
+    
+    
     public static class Program
     {
+        
+        
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
@@ -24,10 +27,15 @@ namespace RamMonitor
         private static IHostBuilder CreateHostBuilder(string[] args)
         {
             IHostBuilder builder = new HostBuilder();
-            builder.UseContentRoot(System.IO.Directory.GetCurrentDirectory());
-
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            
+            // builder.UseContentRoot(System.IO.Directory.GetCurrentDirectory());
+            // builder.UseContentRoot(System.IO.Path.GetDirectoryName(typeof(Program).Assembly.Location));
+            builder.UseContentRoot(System.AppContext.BaseDirectory);
+            
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
             {
+                // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/windows-service?view=aspnetcore-3.1&tabs=visual-studio#app-configuration
+                // Requires Microsoft.Extensions.Hosting.WindowsServices
                 builder.UseWindowsService();
             }
 
@@ -66,18 +74,18 @@ namespace RamMonitor
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
-                    bool isWindows =
-                        System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices
-                            .OSPlatform.Windows);
-
+                    bool isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                            System.Runtime.InteropServices.OSPlatform.Windows
+                    );
+                    
                     // IMPORTANT: This needs to be added *before* configuration is loaded, this lets
                     // the defaults be overridden by the configuration.
                     if (isWindows)
                     {
                         // Default the EventLogLoggerProvider to warning or above
                         logging.AddFilter<EventLogLoggerProvider>(level => level >= LogLevel.Warning);
-                    }
-
+                    } // End if (isWindows) 
+                    
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                     logging.AddConsole();
                     logging.AddDebug();
@@ -87,7 +95,7 @@ namespace RamMonitor
                     {
                         // Add the EventLogLoggerProvider on windows machines
                         logging.AddEventLog();
-                    }
+                    } // End if (isWindows) 
                 })
                 .ConfigureServices((hostingContext, services) =>
                 {
@@ -111,9 +119,9 @@ namespace RamMonitor
                 });
 
             return builder;
-        }
-
-
+        } // End Function CreateHostBuilder 
+        
+        
         private static IHostBuilder OldCreateHostBuilder(string[] args)
         {
             // return Host.CreateDefaultBuilder(args).ConfigureServices((hostContext, services) => { services.AddHostedService<Worker>(); });
@@ -147,5 +155,9 @@ namespace RamMonitor
                     }
                 );
         } // End Function OldCreateHostBuilder 
+        
+        
     } // End Class Program 
+    
+    
 } // End Namespace RamMonitor 
