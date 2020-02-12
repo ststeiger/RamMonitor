@@ -37,6 +37,21 @@ namespace RamMonitor
                 // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/windows-service?view=aspnetcore-3.1&tabs=visual-studio#app-configuration
                 // Requires Microsoft.Extensions.Hosting.WindowsServices
                 builder.UseWindowsService();
+            } 
+            else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+            {
+                // https://devblogs.microsoft.com/dotnet/net-core-and-systemd/
+                // Requires Microsoft.Extensions.Hosting.WindowsServices
+                builder.UseSystemd(); // Add: Microsoft.Extensions.Hosting.Systemd
+            }
+            else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices
+                .OSPlatform.OSX))
+            {
+                throw new System.NotImplementedException("Service for this Platform is NOT implemented.");
+            }
+            else
+            {
+                throw new System.NotSupportedException("This Platform is NOT supported.");
             }
 
             builder.ConfigureHostConfiguration(config =>
