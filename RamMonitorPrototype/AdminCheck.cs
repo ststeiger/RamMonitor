@@ -1,8 +1,48 @@
 ﻿
 namespace RamMonitorPrototype
 {
-    
-    
+
+
+    // https://stackoverflow.com/a/39800004/155077
+    // https://github.com/Teun/thenBy.js/tree/master
+    public class MultiSort<T>
+        :System.Collections.Generic.IComparer<T>
+    {
+
+        public delegate int Comparer_t(T a, T b);
+
+        protected System.Collections.Generic.IComparer<T>[] m_comparers;
+
+
+
+        public MultiSort()
+        { } // End Constructor 
+
+
+        public MultiSort(params System.Collections.Generic.IComparer<T>[] comparers)
+        {
+            this.m_comparers = comparers;
+        } // End Constructor 
+
+
+        public int Compare(T x, T y)
+        {
+            int result = 0;
+
+            for (int i = 0; i < m_comparers.Length; ++i)
+            {
+                result = m_comparers[i].Compare(x, y);
+                if(result!= 0)
+                    return result;
+            } // Next i 
+
+            return result;
+        } // End Function Compare 
+
+
+    } // End Class MultiSort<T> 
+
+
     // https://stackoverflow.com/a/44565550/155077
     public class AdminCheck
     {
