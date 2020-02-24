@@ -12,7 +12,9 @@ using Microsoft.Extensions.Logging;
 // dotnet build -r win-x86
 // dotnet publish -f netcoreapp3.1 -c Release -r win-x86
 // dotnet publish -f netcoreapp3.1 -c Release -r win-x86 -o D:\inetpub\RamMonitor
-
+// dotnet publish -f netcoreapp3.1 -c Release -r win-x86 -o D:\inetpub\RamMonitor
+// dotnet publish -r linux-x64 -c Release /p:PublishSingleFile=true
+// dotnet publish -r win-x86 -c Release /p:PublishSingleFile=true
 
 namespace RamMonitor
 {
@@ -22,28 +24,67 @@ namespace RamMonitor
         : Microsoft.Extensions.Hosting.BackgroundService
     {
         
+        
         private readonly ILogger<Worker> m_logger;
-        private readonly int m_maxLoadRatioBeforeKill;
-        private readonly int m_measureInterval;
+        private IConfiguration m_configuration;
+        private int m_maxLoadRatioBeforeKill;
+        private int m_measureInterval;
+        private bool m_ignoreChange;
         
         
         public Worker(ILogger<Worker> logger, IConfiguration conf)
         {
+            this.m_logger = logger;
+            this.m_configuration = conf;
             IConfigurationSection section = conf.GetSection("KillSettings");
             
             this.m_maxLoadRatioBeforeKill = section.TryGetValue<int>("KillChromeLoadRatio", 79);
             this.m_measureInterval = section.TryGetValue<int>("MeasureInterval", 5000);
             
-            this.m_logger = logger;
+            Microsoft.Extensions.Primitives.ChangeToken.OnChange(
+                  delegate() { return this.m_configuration.GetReloadToken(); } 
+                , delegate(IConfigurationSection state) { InvokeChanged(state); }
+                , section
+            );
+            
         } // End Constructor 
+        
+        
+        
+        private async System.Threading.Tasks.Task FixMicrosoftStupidity()
+        {
+            await System.Threading.Tasks.Task.Delay(1000);
+            this.m_ignoreChange = false;
+        }
+
+
+        private void InvokeChanged(IConfigurationSection section)
+        {
+            if (this.m_ignoreChange)
+                return;
+            
+            this.m_ignoreChange = true;
+            
+            this.m_maxLoadRatioBeforeKill = section.TryGetValue<int>("KillChromeLoadRatio", 79);
+            this.m_measureInterval = section.TryGetValue<int>("MeasureInterval", 5000);
+            
+// #pragma warning disable 1998
+            FixMicrosoftStupidity();
+// #pragma warning restore 1998
+            
+        }
         
         
         protected override async System.Threading.Tasks.Task ExecuteAsync(System.Threading.CancellationToken stoppingToken)
         {
+            IConfigurationSection section = this.m_configuration.GetSection("KillSettings");
             CollectingTextWriter ctw = new CollectingTextWriter();
             
             while (!stoppingToken.IsCancellationRequested)
             {
+                
+#if true // for debugging appsettings.json update
+                
                 GlobalMemoryMetrics metrics = OsInfo.MemoryMetrics;
                 metrics.WriteMemory(ctw);
                 
@@ -56,7 +97,9 @@ namespace RamMonitor
                 
                 this.m_logger.LogInformation("Worker running at: {time}", System.DateTimeOffset.Now);
                 this.m_logger.LogInformation(ctw.StringValue);
-                // KillChromeLoadRatio
+                
+#endif
+                
                 await System.Threading.Tasks.Task.Delay(this.m_measureInterval, stoppingToken);
             } // Whend 
             
