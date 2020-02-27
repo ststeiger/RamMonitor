@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 // dotnet publish -f netcoreapp3.1 -c Release -r win-x86 -o D:\inetpub\RamMonitor
 // dotnet publish -f netcoreapp3.1 -c Release -r win-x86 -o D:\inetpub\RamMonitor
 // dotnet publish -r linux-x64 -c Release /p:PublishSingleFile=true
-// dotnet publish -r win-x86 -c Release /p:PublishSingleFile=true
+// dotnet publish -r win-x86 -c Release /p:PublishSingleFile=true -o D:\inetpub\RamMonitor
 
 namespace RamMonitor
 {
@@ -51,7 +51,7 @@ namespace RamMonitor
         
         
         
-        private async System.Threading.Tasks.Task FixMicrosoftStupidity()
+        private async System.Threading.Tasks.Task IgnoreIrrelevantFileAttributeUpdate()
         {
             await System.Threading.Tasks.Task.Delay(1000);
             this.m_ignoreChange = false;
@@ -69,7 +69,7 @@ namespace RamMonitor
             this.m_measureInterval = section.TryGetValue<int>("MeasureInterval", 5000);
             
 // #pragma warning disable 1998
-            FixMicrosoftStupidity();
+            IgnoreIrrelevantFileAttributeUpdate();
 // #pragma warning restore 1998
             
         }
@@ -97,7 +97,9 @@ namespace RamMonitor
                 
                 this.m_logger.LogInformation("Worker running at: {time}", System.DateTimeOffset.Now);
                 this.m_logger.LogInformation(ctw.StringValue);
-                
+#else
+                System.Console.WriteLine(this.m_measureInterval);
+                System.Console.WriteLine(this.m_maxLoadRatioBeforeKill);
 #endif
                 
                 await System.Threading.Tasks.Task.Delay(this.m_measureInterval, stoppingToken);
