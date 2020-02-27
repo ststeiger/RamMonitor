@@ -1,5 +1,4 @@
 
-using System;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +36,7 @@ namespace RamMonitor
             string executablePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             string executable = System.IO.Path.GetFileNameWithoutExtension(executablePath);
             
-            if ("dotnet".Equals(executable, StringComparison.InvariantCultureIgnoreCase))
+            if ("dotnet".Equals(executable, System.StringComparison.InvariantCultureIgnoreCase))
             {
                 builder.UseContentRoot(System.IO.Path.GetDirectoryName(typeof(Program).Assembly.Location));
             }
