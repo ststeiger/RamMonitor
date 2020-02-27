@@ -78,8 +78,11 @@ namespace RamMonitor
                 dValue /= 1024;
                 i++;
             }
-
-            return string.Format("{0:n" + decimalPlaces + "} {1}", dValue, SizeSuffixes[i]);
+            
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture, 
+                  "{0:n" + decimalPlaces.ToString(System.Globalization.CultureInfo.InvariantCulture) + "} {1}"
+                , dValue, SizeSuffixes[i]
+            );
         }
 
         static string GetSize(long amount)
@@ -91,67 +94,67 @@ namespace RamMonitor
         public void WriteMemory(System.IO.TextWriter output)
         {
             output.Write("WorkingSet:\t\t\t");
-            output.Write(this.WorkingSet.ToString("N0"));
+            output.Write(this.WorkingSet.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.WorkingSet));
 
             output.Write("WorkingSet64:\t\t\t");
-            output.Write(this.WorkingSet64.ToString("N0"));
+            output.Write(this.WorkingSet64.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.WorkingSet64));
 
             output.Write("PeakWorkingSet:\t\t\t");
-            output.Write(this.PeakWorkingSet.ToString("N0"));
+            output.Write(this.PeakWorkingSet.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PeakWorkingSet));
             output.Write("PeakWorkingSet64:\t\t");
-            output.Write(this.PeakWorkingSet64.ToString("N0"));
+            output.Write(this.PeakWorkingSet64.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PeakWorkingSet64));
 
             output.Write("VirtualMemorySize:\t\t");
-            output.Write(this.VirtualMemorySize.ToString("N0"));
+            output.Write(this.VirtualMemorySize.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.VirtualMemorySize));
             output.Write("VirtualMemorySize64:\t\t");
-            output.Write(this.VirtualMemorySize64.ToString("N0"));
+            output.Write(this.VirtualMemorySize64.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.VirtualMemorySize64));
 
             output.Write("PeakVirtualMemorySize:\t\t");
-            output.Write(this.PeakVirtualMemorySize.ToString("N0"));
+            output.Write(this.PeakVirtualMemorySize.ToString("N0, System.Globalization.CultureInfo.InvariantCulture"));
             output.WriteLine(GetSize(this.PeakVirtualMemorySize));
             output.Write("PeakVirtualMemorySize64:\t");
-            output.Write(this.PeakVirtualMemorySize64.ToString("N0"));
+            output.Write(this.PeakVirtualMemorySize64.ToString("N0, System.Globalization.CultureInfo.InvariantCulture"));
             output.WriteLine(GetSize(this.PeakVirtualMemorySize64));
 
             output.Write("PrivateMemorySize:\t\t");
-            output.Write(this.PrivateMemorySize.ToString("N0"));
+            output.Write(this.PrivateMemorySize.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PrivateMemorySize));
             output.Write("PrivateMemorySize64:\t\t");
-            output.Write(this.PrivateMemorySize64.ToString("N0"));
+            output.Write(this.PrivateMemorySize64.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PrivateMemorySize64));
 
             output.Write("PagedMemorySize:\t\t");
-            output.Write(this.PagedMemorySize.ToString("N0"));
+            output.Write(this.PagedMemorySize.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PagedMemorySize));
             output.Write("PagedMemorySize64:\t\t");
-            output.Write(this.PagedMemorySize64.ToString("N0"));
+            output.Write(this.PagedMemorySize64.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PagedMemorySize64));
 
             output.Write("PeakPagedMemorySize:\t\t");
-            output.Write(this.PeakPagedMemorySize.ToString("N0"));
+            output.Write(this.PeakPagedMemorySize.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PeakPagedMemorySize));
             output.Write("PeakPagedMemorySize64:\t\t");
-            output.Write(this.PeakPagedMemorySize64.ToString("N0"));
+            output.Write(this.PeakPagedMemorySize64.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PeakPagedMemorySize64));
 
             output.Write("PagedSystemMemorySize:\t\t");
-            output.Write(this.PagedSystemMemorySize.ToString("N0"));
+            output.Write(this.PagedSystemMemorySize.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PagedSystemMemorySize));
             output.Write("PagedSystemMemorySize64:\t");
-            output.Write(this.PagedSystemMemorySize64.ToString("N0"));
+            output.Write(this.PagedSystemMemorySize64.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PagedSystemMemorySize64));
 
             output.Write("NonpagedSystemMemorySize:\t");
-            output.Write(this.NonpagedSystemMemorySize.ToString("N0"));
+            output.Write(this.NonpagedSystemMemorySize.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PagedSystemMemorySize64));
             output.Write("NonpagedSystemMemorySize64:\t");
-            output.Write(this.NonpagedSystemMemorySize64.ToString("N0"));
+            output.Write(this.NonpagedSystemMemorySize64.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
             output.WriteLine(GetSize(this.PagedSystemMemorySize64));
         } // End Sub WriteMemory 
 

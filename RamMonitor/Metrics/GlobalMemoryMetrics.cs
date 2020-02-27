@@ -91,16 +91,12 @@ namespace RamMonitor
                 return HealthStatus_t.Healthy;
             }
         } // End Property 
-
-
-
-
-
+        
+        
         protected readonly string[] SizeSuffixes =
               { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-
-
-
+        
+        
         protected string SizeSuffix(ulong value)
         {
             return SizeSuffix(value, 1);
@@ -119,39 +115,43 @@ namespace RamMonitor
                 i++;
             }
 
-            return string.Format("{0:n" + decimalPlaces + "} {1}", dValue, SizeSuffixes[i]);
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture, 
+                "{0:n" + decimalPlaces.ToString(System.Globalization.CultureInfo.InvariantCulture) + "} {1}"
+                , dValue, SizeSuffixes[i]
+            );
         }
-
+        
+        
         protected string GetSize(ulong amount)
         {
             return "  ( " + SizeSuffix(amount) + " )";
         }
-
-
+        
+        
         public void WriteMemory(System.IO.TextWriter output)
         {
             {
                 output.Write("Load:\t\t\t");
-                output.Write(this.Load.ToString("N2"));
+                output.Write(this.Load.ToString("N2", System.Globalization.CultureInfo.InvariantCulture));
                 output.WriteLine("%");
             }
-
+            
             System.Type t = this.GetType();
-
+            
             System.Reflection.FieldInfo[] fis = t.GetFields();
-
+            
             for (int i = 0; i < fis.Length; ++i)
             {
                 ulong value = (ulong)fis[i].GetValue(this);
-                output.Write(fis[i].Name + ":\t\t\t");
-                // output.Write(value.ToString("N0"));
+                output.Write(fis[i].Name);
+                output.Write(":\t\t\t");
                 output.WriteLine(GetSize(value));
-            }
+            } // Next i 
             
             output.Flush();
-        }
-
-
+        } // End Sub WriteMemory 
+        
+        
         public static GlobalMemoryMetrics Instance
         {
             get
@@ -175,6 +175,7 @@ namespace RamMonitor
 
                 return metrics;
             }
+            
         } // End Property Instance 
 
 

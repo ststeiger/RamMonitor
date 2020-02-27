@@ -228,7 +228,7 @@ namespace RamMonitor
             // Read the file and display it line by line.
             using (System.IO.StreamReader file = new System.IO.StreamReader(memFile))
             {
-
+                
                 while ((line = file.ReadLine()) != null)
                 {
                     counter++;
