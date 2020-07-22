@@ -10,7 +10,7 @@ REM    displayname= "Subversion Server" depend= Tcpip start= auto
 
 
 sc create CorRamMonitor DisplayName="COR RamMonitor" binpath="c:\path\to\RamMonitor.exe" start=auto
-sc description "CorRamMonitor" "This is my service description"
+sc description "CorRamMonitor" "Monitors RAM usage and kills chrome processes"
 sc config CorRamMonitor type=interact type=own
 
 REM https://stackoverflow.com/questions/15085856/using-sc-to-install-a-windows-service-and-then-set-recovery-properties
