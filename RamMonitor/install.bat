@@ -9,7 +9,8 @@ REM    binpath= "\"C:\Program Files\CollabNet Subversion Server\svnserve.exe\" -
 REM    displayname= "Subversion Server" depend= Tcpip start= auto 
 
 
-sc create CorRamMonitor DisplayName="COR RamMonitor" binpath="c:\path\to\RamMonitor.exe" start=auto
+SET service_path=%~dp0RamMonitor.exe
+sc create CorRamMonitor DisplayName="COR RamMonitor" binpath="%service_path%" start=auto
 sc description "CorRamMonitor" "Monitors RAM usage and kills chrome processes"
 sc config CorRamMonitor type=interact type=own
 
