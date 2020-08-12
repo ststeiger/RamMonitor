@@ -32,10 +32,18 @@ namespace RamMonitor
             // builder.UseContentRoot(System.IO.Path.GetDirectoryName(typeof(Program).Assembly.Location));
             // builder.UseContentRoot(System.AppContext.BaseDirectory);
 
-            
             string executablePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             string executable = System.IO.Path.GetFileNameWithoutExtension(executablePath);
-            
+
+            System.Console.WriteLine(System.Environment.NewLine);
+            System.Console.Write("Executable Path: ");
+            System.Console.WriteLine(executablePath);
+            System.Console.WriteLine("BaseDirectory: ");
+            System.Console.WriteLine(System.AppDomain.CurrentDomain.BaseDirectory);
+            System.Console.WriteLine(System.Environment.NewLine);
+            System.Environment.Exit(1);
+
+
             if ("dotnet".Equals(executable, System.StringComparison.InvariantCultureIgnoreCase))
             {
                 builder.UseContentRoot(System.IO.Path.GetDirectoryName(typeof(Program).Assembly.Location));
@@ -60,91 +68,106 @@ namespace RamMonitor
             else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices
                 .OSPlatform.OSX))
             {
-                throw new System.NotImplementedException("Service for this Platform is NOT implemented.");
+                throw new System.NotImplementedException("Service for OSX Platform is NOT implemented.");
             }
             else
             {
                 throw new System.NotSupportedException("This Platform is NOT supported.");
             }
 
-            builder.ConfigureHostConfiguration(config =>
-            {
-                config.AddEnvironmentVariables(prefix: "DOTNET_");
-                if (args != null)
+            builder.ConfigureHostConfiguration(
+                delegate(IConfigurationBuilder config)
                 {
-                    config.AddCommandLine(args);
-                }
-            });
+                    // string bd = System.AppDomain.CurrentDomain.BaseDirectory;
+                    // config.SetBasePath(bd);
 
-            builder.ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    IHostEnvironment env = hostingContext.HostingEnvironment;
-
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-
-                    if (env.IsDevelopment() && !string.IsNullOrEmpty(env.ApplicationName))
-                    {
-                        System.Reflection.Assembly appAssembly =
-                            System.Reflection.Assembly.Load(new System.Reflection.AssemblyName(env.ApplicationName));
-                        if (appAssembly != null)
-                        {
-                            config.AddUserSecrets(appAssembly, optional: true);
-                        }
-                    }
-
-                    config.AddEnvironmentVariables();
-
+                    config.AddEnvironmentVariables(prefix: "DOTNET_");
                     if (args != null)
                     {
                         config.AddCommandLine(args);
                     }
-                })
-                .ConfigureLogging((hostingContext, logging) =>
-                {
-                    bool isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
-                            System.Runtime.InteropServices.OSPlatform.Windows
-                    );
-                    
-                    // IMPORTANT: This needs to be added *before* configuration is loaded, this lets
-                    // the defaults be overridden by the configuration.
-                    if (isWindows)
+                }
+            );
+
+            builder.ConfigureAppConfiguration(
+                    delegate (HostBuilderContext hostingContext, IConfigurationBuilder config)
                     {
-                        // Default the EventLogLoggerProvider to warning or above
-                        logging.AddFilter<EventLogLoggerProvider>(level => level >= LogLevel.Warning);
-                    } // End if (isWindows) 
-                    
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
-                    logging.AddDebug();
-                    logging.AddEventSourceLogger();
+                        IHostEnvironment env = hostingContext.HostingEnvironment;
 
-                    if (isWindows)
+                        config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
+                        if (env.IsDevelopment() && !string.IsNullOrEmpty(env.ApplicationName))
+                        {
+                            System.Reflection.Assembly appAssembly =
+                                System.Reflection.Assembly.Load(new System.Reflection.AssemblyName(env.ApplicationName));
+                            if (appAssembly != null)
+                            {
+                                config.AddUserSecrets(appAssembly, optional: true);
+                            }
+                        }
+
+                        config.AddEnvironmentVariables();
+
+                        if (args != null)
+                        {
+                            config.AddCommandLine(args);
+                        }
+                    }
+                )
+                .ConfigureLogging(
+                    delegate(HostBuilderContext hostingContext, ILoggingBuilder logging)
                     {
-                        // Add the EventLogLoggerProvider on windows machines
-                        logging.AddEventLog();
-                    } // End if (isWindows) 
-                })
-                .ConfigureServices((hostingContext, services) =>
-                {
-                    // AWSSDK.Extensions.NETCore.Setup
-                    // AWSSDK.SQS
-                    // Microsoft.VisualStudio.Azure.Containers.Tools.Targets
+                        
+                        bool isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                                System.Runtime.InteropServices.OSPlatform.Windows
+                        );
+                    
+                        // IMPORTANT: This needs to be added *before* configuration is loaded, this lets
+                        // the defaults be overridden by the configuration.
+                        if (isWindows)
+                        {
+                            // Default the EventLogLoggerProvider to warning or above
+                            logging.AddFilter<EventLogLoggerProvider>(level => level >= LogLevel.Warning);
+                        } // End if (isWindows) 
+                    
+                        logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                        logging.AddConsole();
+                        logging.AddDebug();
+                        logging.AddEventSourceLogger();
 
-                    // AWS Configuration
-                    // AWSOptions options = hostingContext.Configuration.GetAWSOptions();
-                    // services.AddDefaultAWSOptions(options);
-                    // services.AddAWSService<IAmazonSQS>();
+                        if (isWindows)
+                        {
+                            // Add the EventLogLoggerProvider on windows machines
+                            logging.AddEventLog();
+                        } // End if (isWindows) 
+                    }
+                )
+                .ConfigureServices(
+                    delegate(HostBuilderContext hostingContext, IServiceCollection services) 
+                    {
+                    
+                        // AWSSDK.Extensions.NETCore.Setup
+                        // AWSSDK.SQS
+                        // Microsoft.VisualStudio.Azure.Containers.Tools.Targets
 
-                    // Worker Service
-                    services.AddHostedService<Worker>();
-                })
-                .UseDefaultServiceProvider((context, options) =>
-                {
-                    bool isDevelopment = context.HostingEnvironment.IsDevelopment();
-                    options.ValidateScopes = isDevelopment;
-                    options.ValidateOnBuild = isDevelopment;
-                });
+                        // AWS Configuration
+                        // AWSOptions options = hostingContext.Configuration.GetAWSOptions();
+                        // services.AddDefaultAWSOptions(options);
+                        // services.AddAWSService<IAmazonSQS>();
+
+                        // Worker Service
+                        services.AddHostedService<Worker>();
+                    }
+                )
+                .UseDefaultServiceProvider(
+                    delegate(HostBuilderContext hostingContext, ServiceProviderOptions options)
+                    {
+                        bool isDevelopment = hostingContext.HostingEnvironment.IsDevelopment();
+                        options.ValidateScopes = isDevelopment;
+                        options.ValidateOnBuild = isDevelopment;
+                    }
+                );
 
             return builder;
         } // End Function CreateHostBuilder 
