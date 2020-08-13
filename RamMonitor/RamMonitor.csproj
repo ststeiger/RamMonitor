@@ -4,8 +4,17 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <UserSecretsId>dotnet-RamMonitor-D01A4C22-E4F2-4466-BACD-59E42880C888</UserSecretsId>
         <PublishTrimmed>true</PublishTrimmed>
+        <AssemblyName>LdapService</AssemblyName>
     </PropertyGroup>
-    
+
+    <ItemGroup>
+      <None Remove="install.bat" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="install.bat" />
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="3.1.0" />
@@ -14,12 +23,21 @@
         <PackageReference Include="Quartz" Version="3.0.7" />
         <PackageReference Include="System.Management" Version="4.7.0" />
     </ItemGroup>
-    
-    <ItemGroup>
-        <Content Update="appsettings.json">
-            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        </Content>
-    </ItemGroup>
-    
+
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Update="install.bat">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
 </Project>

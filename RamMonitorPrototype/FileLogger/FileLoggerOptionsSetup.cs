@@ -8,7 +8,7 @@ namespace RamMonitorPrototype
     {
 
         public FileLoggerOptionsSetup(
-            Microsoft.Extensions.Logging.Configuration.ILoggerProviderConfiguration<FooLoggerProvider>
+            Microsoft.Extensions.Logging.Configuration.ILoggerProviderConfiguration<FileLoggerProvider>
             providerConfiguration
         )
             : base(providerConfiguration.Configuration)

@@ -24,7 +24,7 @@ namespace RamMonitorPrototype
 
             builder.Services.TryAddEnumerable(Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<
                     Microsoft.Extensions.Logging.ILoggerProvider,
-                    FooLoggerProvider
+                    FileLoggerProvider
                 >()
             );
 
@@ -36,7 +36,7 @@ namespace RamMonitorPrototype
                 <
                     IOptionsChangeTokenSource<FileLoggerOptions>,
                     LoggerProviderOptionsChangeTokenSource<FileLoggerOptions
-                    , FooLoggerProvider>
+                    , FileLoggerProvider>
                 >());
 
             builder.Services.Configure(configure);
@@ -46,4 +46,6 @@ namespace RamMonitorPrototype
 
 
     }
+
+
 }

@@ -40,7 +40,13 @@ namespace RamMonitor
             
             this.m_maxLoadRatioBeforeKill = section.TryGetValue<int>("KillChromeLoadRatio", 79);
             this.m_measureInterval = section.TryGetValue<int>("MeasureInterval", 5000);
-            
+
+
+            m_logger.LogInformation("Worker Constructor");
+            m_logger.LogInformation("m_maxLoadRatioBeforeKill: {0}, m_measureInterval: {1}", this.m_maxLoadRatioBeforeKill, this.m_measureInterval);
+
+
+
             Microsoft.Extensions.Primitives.ChangeToken.OnChange(
                   delegate() { return this.m_configuration.GetReloadToken(); } 
                 , delegate(IConfigurationSection state) { InvokeChanged(state); }
@@ -67,10 +73,14 @@ namespace RamMonitor
             
             this.m_maxLoadRatioBeforeKill = section.TryGetValue<int>("KillChromeLoadRatio", 79);
             this.m_measureInterval = section.TryGetValue<int>("MeasureInterval", 5000);
-            
-// #pragma warning disable 1998
+
+            m_logger.LogInformation("InvokeChanged");
+            m_logger.LogInformation("m_maxLoadRatioBeforeKill: {0}, m_measureInterval: {1}", this.m_maxLoadRatioBeforeKill, this.m_measureInterval);
+
+
+            // #pragma warning disable 1998
             IgnoreIrrelevantFileAttributeUpdate();
-// #pragma warning restore 1998
+            // #pragma warning restore 1998
             
         }
         
