@@ -2,9 +2,15 @@
 namespace RamMonitor
 {
 
-    
 
-
+    // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-3.1
+    // https://docs.microsoft.com/en-us/windows/win32/etw/about-event-tracing
+    // https://cloud.google.com/trace/docs/setup/aspnetcore
+    // https://blog.rsuter.com/logging-with-ilogger-recommendations-and-best-practices/
+    // https://github.com/mcuadros/go-syslog
+    // https://stackoverflow.com/questions/49049081/regular-expression-for-syslog-rfc5424
+    // https://github.com/BlueWombat/DotSyslog
+    // https://github.com/adams85/filelogger
     public class IgnoreLogger
       : Microsoft.Extensions.Logging.ILogger
     {
