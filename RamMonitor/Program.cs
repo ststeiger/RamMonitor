@@ -10,77 +10,122 @@ using Microsoft.Extensions.Logging.EventLog;
 // version 3.1.0
 namespace RamMonitor
 {
-
-
+    
+    
     public static class Program
     {
         private static Logging.TrivialLogger s_logger;
 
+        private static string s_ProgramDirectory;
+        private static string s_CurrentDirectory;
+        private static string s_BaseDirectory;
+        private static string s_ExecutablePath;
+        private static string s_ExecutableDirectory;
+        private static string s_Executable;
+        private static string s_ContentRootDirectory;
+
+
+        private static void DisplayError(System.Exception ex)
+        {
+            System.Console.WriteLine(System.Environment.NewLine);
+            System.Console.WriteLine(System.Environment.NewLine);
+                
+            System.Exception thisError = ex;
+            while (thisError != null)
+            {
+                System.Console.WriteLine(thisError.Message);
+                System.Console.WriteLine(thisError.StackTrace);
+                   
+                if (thisError.InnerException != null)
+                {
+                    System.Console.WriteLine(System.Environment.NewLine);
+                    System.Console.WriteLine("Inner Exception:");
+                } // End if (thisError.InnerException != null) 
+                
+                thisError = thisError.InnerException;
+            } // Whend 
+                
+            System.Console.WriteLine(System.Environment.NewLine);
+            System.Console.WriteLine(System.Environment.NewLine);
+        } // End Sub DisplayError 
+
 
         static Program()
         {
-            // s_logger = new Logging.FileLogger(@"D:\IDGLog.txt");
-            s_logger = new Logging.HtmlLogger(@"D:\IDGLog.htm");
-        }
+            try
+            {
+                s_ProgramDirectory = System.IO.Path.GetDirectoryName(typeof(Program).Assembly.Location);
+                s_CurrentDirectory = System.IO.Directory.GetCurrentDirectory();
+                s_BaseDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
+                s_ExecutablePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                s_ExecutableDirectory = System.IO.Path.GetDirectoryName(s_ExecutablePath);
+                s_Executable = System.IO.Path.GetFileNameWithoutExtension(s_ExecutablePath);
+                
+                string logFilePath = null;
+                string fileName = @"ServiceStartupLog.htm";
+                
+                if ("dotnet".Equals(s_Executable, System.StringComparison.InvariantCultureIgnoreCase))
+                {
+                    s_ContentRootDirectory = s_ProgramDirectory;
+                    logFilePath = System.IO.Path.Combine(s_ProgramDirectory, fileName);
+                }
+                else
+                {
+                    s_ContentRootDirectory = s_ExecutableDirectory;
+                    logFilePath = System.IO.Path.Combine(s_ExecutableDirectory, fileName);
+                }
 
+                if (System.IO.File.Exists(logFilePath))
+                    System.IO.File.Delete(logFilePath);
 
+                // s_logger = new Logging.HtmlLogger(@"D:\IDGLog.htm");
+                s_logger = new Logging.HtmlLogger(logFilePath);
+                
+                s_logger.Log(Logging.LogLevel_t.Information, "Program Directory: {0}", s_ProgramDirectory);
+                s_logger.Log(Logging.LogLevel_t.Information, "Current Directory: {0}", s_CurrentDirectory);
+                s_logger.Log(Logging.LogLevel_t.Information, "Base Directory: {0}", s_BaseDirectory);
+                s_logger.Log(Logging.LogLevel_t.Information, "Logfile Directory: {0}", s_ContentRootDirectory);
+                s_logger.Log(Logging.LogLevel_t.Information, "Executable Path: {0}", s_ExecutablePath);
+                s_logger.Log(Logging.LogLevel_t.Information, "Executable Directory: {0}", s_ExecutableDirectory);
+                s_logger.Log(Logging.LogLevel_t.Information, "Executable: {0}", s_Executable);
+            } // End Try 
+            catch (System.Exception ex)
+            {
+                DisplayError(ex);
+                System.Environment.Exit(ex.HResult);
+            } // End Catch 
+            
+        } // End Static Constructor 
+        
+        
         public static void Main(string[] args)
         {
+            
             try
             {
                 CreateHostBuilder(args).Build().Run();
             }
             catch (System.Exception ex)
             {
-                s_logger.Log(Logging.LogLevel_t.Configuration, "EXXX: {0}", ex);
-
-                System.Console.WriteLine(System.Environment.NewLine);
-                System.Console.WriteLine(System.Environment.NewLine);
-
-                System.Console.WriteLine(ex.Message);
-                System.Console.WriteLine(ex.StackTrace);
-                System.Console.WriteLine(System.Environment.NewLine);
-                System.Console.WriteLine(System.Environment.NewLine);
+                DisplayError(ex);
+                s_logger.Log(Logging.LogLevel_t.Configuration, "Configuration Error", ex);
                 System.Environment.Exit(ex.HResult);
             }
-
+            
         } // End Sub Main 
-
-
+        
+        
         private static IHostBuilder CreateHostBuilder(string[] args)
         {
             IHostBuilder builder = new HostBuilder();
-
+            
             try
             {
-
                 // builder.UseContentRoot(System.IO.Directory.GetCurrentDirectory());
                 // builder.UseContentRoot(System.IO.Path.GetDirectoryName(typeof(Program).Assembly.Location));
                 // builder.UseContentRoot(System.AppContext.BaseDirectory);
 
-
-                string programDirectory = System.IO.Path.GetDirectoryName(typeof(Program).Assembly.Location);
-                string curDir = System.IO.Directory.GetCurrentDirectory();
-                string baseDir = System.AppDomain.CurrentDomain.BaseDirectory;
-                string executablePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-                string executable = System.IO.Path.GetFileNameWithoutExtension(executablePath);
-
-
-                s_logger.Log(Logging.LogLevel_t.Information, "Program Directory: {0}", programDirectory);
-                s_logger.Log(Logging.LogLevel_t.Information, "Current Directory: {0}", curDir);
-                s_logger.Log(Logging.LogLevel_t.Information, "Base Directory: {0}", baseDir);
-                s_logger.Log(Logging.LogLevel_t.Information, "Executable Path: {0}", executablePath);
-                s_logger.Log(Logging.LogLevel_t.Information, "Executable: {0}", executable);
-
-
-                if ("dotnet".Equals(executable, System.StringComparison.InvariantCultureIgnoreCase))
-                {
-                    builder.UseContentRoot(System.IO.Path.GetDirectoryName(typeof(Program).Assembly.Location));
-                }
-                else
-                {
-                    builder.UseContentRoot(System.IO.Path.GetDirectoryName(executablePath));
-                }
+                builder.UseContentRoot(s_ContentRootDirectory);
 
                 if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
                 {
@@ -94,8 +139,7 @@ namespace RamMonitor
                     // Requires Microsoft.Extensions.Hosting.WindowsServices
                     builder.UseSystemd(); // Add: Microsoft.Extensions.Hosting.Systemd
                 }
-                else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices
-                    .OSPlatform.OSX))
+                else if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
                 {
                     throw new System.NotImplementedException("Service for OSX Platform is NOT implemented.");
                 }
@@ -103,14 +147,14 @@ namespace RamMonitor
                 {
                     throw new System.NotSupportedException("This Platform is NOT supported.");
                 }
-
+                
                 builder.ConfigureHostConfiguration(
                     delegate (IConfigurationBuilder config)
                     {
-                        // string bd = System.AppDomain.CurrentDomain.BaseDirectory;
-                        // string bd = @"C:\";
-                        // config.SetBasePath(bd);
-
+                        // Has no effect ... 
+                        // s_logger.Log(Logging.LogLevel_t.Information, "SetBasePath: {0}", s_ExecutableDirectory);
+                        // config.SetBasePath(s_ExecutableDirectory);
+                        
                         config.AddEnvironmentVariables(prefix: "DOTNET_");
                         if (args != null)
                         {
@@ -119,15 +163,20 @@ namespace RamMonitor
 
                     } // End Delegate 
                 );
-
+                
                 builder.ConfigureAppConfiguration(
                         delegate (HostBuilderContext hostingContext, IConfigurationBuilder config)
                         {
                             IHostEnvironment env = hostingContext.HostingEnvironment;
-
-                            config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                            // Completely wrong ... 
+                            // s_logger.Log(Logging.LogLevel_t.Information, "ContentRootPath: {0}", env.ContentRootPath);
+                            
+                            string appSettingsFile = System.IO.Path.Combine(s_ContentRootDirectory, "appsettings.json");
+                            
+                            // config.AddJsonFile("appsettings.json"
+                            config.AddJsonFile(appSettingsFile, optional: false, reloadOnChange: true)
                                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-
+                            
                             if (env.IsDevelopment() && !string.IsNullOrEmpty(env.ApplicationName))
                             {
                                 System.Reflection.Assembly appAssembly =
@@ -152,7 +201,6 @@ namespace RamMonitor
                     .ConfigureLogging(
                         delegate (HostBuilderContext hostingContext, ILoggingBuilder logging)
                         {
-
                             bool isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
                                     System.Runtime.InteropServices.OSPlatform.Windows
                             );
@@ -175,13 +223,13 @@ namespace RamMonitor
                             logging.AddFileLogger(
                                 delegate (FileLoggerOptions options)
                                 {
-                                    string postFix = System.DateTime.Now.ToString("yyyy'-'MM'-'dd'_'HH'-'mm'-'ss");
-
-                                    options.LogFilePath = @"D:\LogFile_RamMonitor_"+ postFix + ".txt";
                                     options.LogLevel = LogLevel.Information;
+                                    options.LogFilePath = System.IO.Path.Combine(s_ContentRootDirectory, @"RamMonitor.log.txt");
+                                    if (System.IO.File.Exists(options.LogFilePath))
+                                        System.IO.File.Delete(options.LogFilePath);
                                 }
                             );
-
+                            
                             logging.AddConsole();
                             logging.AddDebug();
                             logging.AddEventSourceLogger(); // is for Event Tracing.
@@ -233,7 +281,7 @@ namespace RamMonitor
                 System.Console.WriteLine(System.Environment.NewLine);
                 System.Environment.Exit(1);
             }
-
+            
             return builder;
         } // End Function CreateHostBuilder 
 
