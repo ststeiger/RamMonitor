@@ -216,10 +216,13 @@ namespace RamMonitor
                             // logging.ClearProviders();
                             logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
 
+#if false
                             // https://www.codeproject.com/Articles/5255953/Use-Trace-and-TraceSource-in-NET-Core-Logging
                             // https://github.com/nreco/logging/tree/master/src/NReco.Logging.File
                             // https://github.com/adams85/filelogger
                             // https://docs.microsoft.com/en-us/dotnet/framework/debug-trace-profile/tracing-and-instrumenting-applications
+                            // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-3.1
+                            // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-3.1#azure-application-insights
                             logging.AddFileLogger(
                                 delegate (FileLoggerOptions options)
                                 {
@@ -229,7 +232,8 @@ namespace RamMonitor
                                         System.IO.File.Delete(options.LogFilePath);
                                 }
                             );
-                            
+#endif
+
                             logging.AddConsole();
                             logging.AddDebug();
                             logging.AddEventSourceLogger(); // is for Event Tracing.

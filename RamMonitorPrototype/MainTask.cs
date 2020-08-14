@@ -87,7 +87,7 @@ namespace RamMonitorPrototype
                             System.IO.Directory.CreateDirectory(logDir);
 
 
-                        configLogging.AddProvider(new FooLoggerProvider());
+                        configLogging.AddProvider(new FileLoggerProvider());
 
 
                         configLogging.AddFileLogger(
