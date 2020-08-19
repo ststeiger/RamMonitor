@@ -79,8 +79,13 @@ namespace RamMonitor.Logging
                                 streamWriter.WriteLine("Inner Exception:");
                             } // End if (thisError != null) 
 
+
+                            streamWriter.Flush();
+                            strm.Flush();
                         } // Whend 
 
+                        streamWriter.Flush();
+                        strm.Flush();
                         streamWriter.Close();
                     } // End Using streamWriter 
 

@@ -183,11 +183,17 @@ namespace RamMonitor.Logging
                             } // End if (thisError != null) 
 
                             thisError = thisError.InnerException;
+
+                            streamWriter.Flush();
+                            strm.Flush();
                         } // Whend 
 
                         streamWriter.WriteLine("</td>");
                         streamWriter.WriteLine("</tr>");
 
+
+                        streamWriter.Flush();
+                        strm.Flush();
                         streamWriter.Close();
                     } // End Using streamWriter 
 
