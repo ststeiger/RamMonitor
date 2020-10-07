@@ -8,17 +8,20 @@ REM    binpath= "\"C:\Program Files\CollabNet Subversion Server\svnserve.exe\" -
 REM    displayname= "Subversion Server" depend= Tcpip start= auto 
 
 
+REM there absolutely needs to be a space after the EQUAL-sign in sc-commands ! 
+
+
 SET service_path=%~dp0RamMonitor.exe
-sc create CorRamMonitor DisplayName="COR RamMonitor" binpath="%service_path%" start=auto
+sc create "CorRamMonitor" DisplayName= "COR RamMonitor" binpath= "%service_path%" start= "auto" 
 sc description "CorRamMonitor" "Monitors RAM usage and kills chrome processes"
-sc config CorRamMonitor type=interact type=own
+sc config "CorRamMonitor" type= "interact" type= "own"
 
 REM https://stackoverflow.com/questions/15085856/using-sc-to-install-a-windows-service-and-then-set-recovery-properties
 REM https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/cc742019(v%3Dws.11)
 REM https://stackoverflow.com/questions/22872510/how-to-use-sc-to-install-a-service-and-specify-no-action-for-subsequent-failu
-sc failure CorRamMonitor reset=86400 actions=restart/5000/restart/5000/restart/5000
+sc failure "CorRamMonitor" reset= "86400" actions= "restart/5000/restart/5000/restart/5000"
 
-sc start CorRamMonitor 
+sc start "CorRamMonitor"
 
 
 

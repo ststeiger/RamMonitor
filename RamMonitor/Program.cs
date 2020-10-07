@@ -171,10 +171,9 @@ namespace RamMonitor
                             // Completely wrong ... 
                             // s_logger.Log(Logging.LogLevel_t.Information, "ContentRootPath: {0}", env.ContentRootPath);
                             
-                            string appSettingsFile = System.IO.Path.Combine(s_ContentRootDirectory, "appsettings.json");
-                            
-                            // config.AddJsonFile("appsettings.json"
-                            config.AddJsonFile(appSettingsFile, optional: false, reloadOnChange: true)
+                            config.SetBasePath(s_ExecutableDirectory);
+
+                            config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                             
                             if (env.IsDevelopment() && !string.IsNullOrEmpty(env.ApplicationName))
